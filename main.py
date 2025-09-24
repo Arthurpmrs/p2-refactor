@@ -1,4 +1,6 @@
+from prompts import add_student_to_class, input_school_class, visualizar_turma
 from system import Escola, Aluno, Funcionario, Responsavel
+
 
 # ========================
 # Menus
@@ -17,36 +19,59 @@ def menu_aluno(escola, aluno):
 
         match opcao:
             case "1":
-                print("📚 Materiais:", aluno.materiais if aluno.materiais else "📭 Nenhum material disponível.")
+                print(
+                    "📚 Materiais:",
+                    aluno.materiais
+                    if aluno.materiais
+                    else "📭 Nenhum material disponível.",
+                )
             case "2":
-                print("📊 Notas:", aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.")
+                print(
+                    "📊 Notas:",
+                    aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.",
+                )
             case "3":
-                print("📝 Provas:", aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.")
+                print(
+                    "📝 Provas:",
+                    aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.",
+                )
             case "4":
-                print(f"✅ Presenças: {len(aluno.presencas)} dia(s)" if aluno.presencas else "❌ Nenhuma presença registrada.")
+                print(
+                    f"✅ Presenças: {len(aluno.presencas)} dia(s)"
+                    if aluno.presencas
+                    else "❌ Nenhuma presença registrada."
+                )
             case "5":
-                print("🎯 Atividades:", aluno.atividades if aluno.atividades else "📭 Nenhuma atividade registrada.")
+                print(
+                    "🎯 Atividades:",
+                    aluno.atividades
+                    if aluno.atividades
+                    else "📭 Nenhuma atividade registrada.",
+                )
             case "0":
                 break
             case _:
                 print("Opção inválida.")
 
-def menu_funcionario(escola, funcionario):
+
+def menu_funcionario(escola: Escola, funcionario: Funcionario):
     print(f"\n👨‍🏫 Bem-vindo(a), {funcionario.nome} ({funcionario.cargo})!")
     while True:
         print("\n--- Menu do Funcionário ---")
 
         if funcionario.cargo in ["professor", "diretor"]:
             # professor e diretor têm todas as opções
-            print("1. Registrar presença do aluno")
-            print("2. Lançar nota do aluno")
-            print("3. Distribuir material")
-            print("4. Gerenciar turmas")
-            print("5. Agendar prova")
-            print("6. Registrar atividade extracurricular")
-            print("7. Remover aluno")
-            print("8. Consultar alunos matriculados")
-            print("9. Rastrear transporte escolar")
+            print(" 1. Registrar presença do aluno")
+            print(" 2. Lançar nota do aluno")
+            print(" 3. Distribuir material")
+            print(" 4. Gerenciar turmas")
+            print(" 5. Agendar prova")
+            print(" 6. Registrar atividade extracurricular")
+            print(" 7. Remover aluno")
+            print(" 8. Consultar alunos matriculados")
+            print(" 9. Rastrear transporte escolar")
+            print("10. Adicioanr alunos a turmas")
+            print("11. Visualizar turma")
             print("0. Sair")
         else:
             # motoristas e outros cargos: apenas presença e rastreamento
@@ -91,9 +116,8 @@ def menu_funcionario(escola, funcionario):
                     print("Opção inválida.")
             case "4":
                 if funcionario.cargo in ["professor", "diretor"]:
-                    turma = input("Nome da turma: ")
-                    horario = input("Horário da turma: ")
-                    escola.gerenciar_turmas(turma, horario)
+                    turma = input_school_class(funcionario)
+                    escola.gerenciar_turmas(turma)
                 else:
                     print("Opção inválida.")
             case "5":
@@ -103,7 +127,9 @@ def menu_funcionario(escola, funcionario):
                         nome_prova = input("Nome da prova: ")
                         data_prova = input("Data da prova (DD/MM/AAAA): ")
                         disciplina = funcionario.disciplina
-                        escola.agendar_prova(id_aluno, nome_prova, data_prova, disciplina)
+                        escola.agendar_prova(
+                            id_aluno, nome_prova, data_prova, disciplina
+                        )
                     except ValueError:
                         print("Valor inválido.")
                 else:
@@ -148,10 +174,17 @@ def menu_funcionario(escola, funcionario):
                         print("ID inválido.")
                 else:
                     print("Opção inválida.")
+            case "10":
+                if funcionario.cargo in ["professor", "diretor"]:
+                    add_student_to_class(funcionario, escola)
+            case "11":
+                if funcionario.cargo in ["professor", "diretor"]:
+                    visualizar_turma(funcionario, escola)
             case "0":
                 break
             case _:
                 print("Opção inválida.")
+
 
 def menu_responsavel(escola, responsavel):
     print(f"\n👪 Bem-vindo, {responsavel.nome}!")
@@ -177,13 +210,14 @@ def menu_responsavel(escola, responsavel):
             case _:
                 print("Opção inválida.")
 
+
 # ========================
 # Main
 # ========================
 def main():
     escola = Escola()
     print("\n=== 🎓 Sistema de Gestão Escolar ===")
-    
+
     while True:
         print("\n1 - Login")
         print("2 - Cadastrar usuário")
@@ -199,10 +233,13 @@ def main():
             tipo_opcao = input("Escolha uma opção: ")
 
             match tipo_opcao:
-                case "1": tipo = "aluno"
-                case "2": tipo = "funcionario"
-                case "3": tipo = "responsavel"
-                case _: 
+                case "1":
+                    tipo = "aluno"
+                case "2":
+                    tipo = "funcionario"
+                case "3":
+                    tipo = "responsavel"
+                case _:
                     print("❌ Opção inválida.")
                     continue
 
@@ -229,10 +266,13 @@ def main():
             tipo_opcao = input("Escolha uma opção: ")
 
             match tipo_opcao:
-                case "1": tipo = "aluno"
-                case "2": tipo = "funcionario"
-                case "3": tipo = "responsavel"
-                case _: 
+                case "1":
+                    tipo = "aluno"
+                case "2":
+                    tipo = "funcionario"
+                case "3":
+                    tipo = "responsavel"
+                case _:
                     print("❌ Opção inválida.")
                     continue
 
@@ -250,12 +290,16 @@ def main():
                 match cargo_opcao:
                     case "1":
                         cargo = "diretor"
-                        disciplina = input("Digite a disciplina que o diretor irá acompanhar (ou deixe vazio): ")
+                        disciplina = input(
+                            "Digite a disciplina que o diretor irá acompanhar (ou deixe vazio): "
+                        )
                         if disciplina.strip() == "":
                             disciplina = None
                     case "2":
                         cargo = "professor"
-                        disciplina = input("Digite a disciplina que o professor irá lecionar: ")
+                        disciplina = input(
+                            "Digite a disciplina que o professor irá lecionar: "
+                        )
                     case "3":
                         cargo = "motorista"
                         disciplina = None
@@ -266,11 +310,15 @@ def main():
                         print("❌ Opção inválida.")
                         continue
 
-                escola.cadastrar_usuario(tipo, nome, senha, cargo=cargo, disciplina=disciplina)
+                escola.cadastrar_usuario(
+                    tipo, nome, senha, cargo=cargo, disciplina=disciplina
+                )
 
             elif tipo == "responsavel":
                 try:
-                    id_aluno = int(input("ID do aluno que o responsável irá acompanhar: "))
+                    id_aluno = int(
+                        input("ID do aluno que o responsável irá acompanhar: ")
+                    )
                 except ValueError:
                     print("ID inválido.")
                     continue
@@ -284,6 +332,7 @@ def main():
             break
         else:
             print("Opção inválida. Tente novamente.")
+
 
 if __name__ == "__main__":
     main()

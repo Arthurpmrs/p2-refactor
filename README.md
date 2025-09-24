@@ -13,38 +13,17 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 - 👪 Responsáveis (Pais ou responsáveis legais)
 
 ---
-
-## ✨ Funcionalidades Implementadas
-
-- ✅ Cadastro de alunos, funcionários e responsáveis (com nome e senha)  
-- 🔐 Login seguro por tipo de usuário (aluno, funcionário, responsável)  
-- 📝 Menu personalizado para cada tipo de usuário  
-- ⏰ Registro de presença  
-  - **Restrito aos funcionários**  
-  - **Professores** podem registrar presença, lançar notas, distribuir materiais, agendar provas, gerenciar turmas e registrar atividades extracurriculares  
-  - **Motoristas e outros cargos** podem apenas registrar presença e rastrear transporte escolar  
-- 📊 Lançamento e consulta de notas (**somente para professores**)  
-- 📚 Compartilhamento e visualização de materiais didáticos (**somente para professores**)  
-- 🗓️ Agendamento e visualização de provas (**somente para professores**)  
-- 🎯 Registro de atividades extracurriculares (**somente para professores**)  
-- 💰 Pagamento de mensalidade (**restrito ao responsável**)  
-- 🚌 Rastreio do transporte escolar (**pelo responsável e outros funcionários**)  
-- 👀 Consulta de relatório completo do aluno (pelo responsável)  
-- 📆 Grade de horários e gerenciamento de turmas (**somente para professores**)  
-- 🧠 Mensagens de erro claras para entradas inválidas ou ausentes  
-
----
-
-## ⚠️ Regras e Restrições
-
-- 📅 Datas devem ser informadas no formato `DD/MM/AAAA`  
-- 🔢 Cada aluno recebe um ID exclusivo, usado por funcionários e responsáveis para vinculação  
-- 🔒 Senhas armazenadas em texto simples (sem criptografia)  
-- 🚫 Somente funcionários podem registrar presença e alterar dados acadêmicos  
-- 👨‍🏫 Professores têm acesso completo às funcionalidades acadêmicas  
-- 👪 Responsáveis devem informar o **ID do aluno** ao se cadastrar  
-- 💾 Todos os dados são armazenados apenas **em memória** — sem salvamento permanente  
-- ❌ Caso não existam registros de materiais, notas ou provas, será exibida uma mensagem informando a ausência, junto de um símbolo visual (ASCII)
+## Funcionalidades do sistema
+- **Student Enrollment**: Aluno pode ser cadastrado no sistema.
+- **Attendance Tracking**: O Professor pode registrar presenças para um Aluno. Essas informações ficam disponíveis para o próprio Aluno e para o Responsável.
+- **Parent Portal**: O Responsável tem a opção de ver um resumo das atividades do aluno, incluindo: Notas, próximas provas, presença e atividades extracurriculares.
+- **Class and Timetable Management**: O Usuário pode criar uma turma e adicionar alunos.
+- **Examination Management**: O usuário pode criar provas para uma turma.
+- **Gradebook Management**: O usuário pode cadastrar as notas das provas para cada aluno da turma.
+- **Extra-Curricular Activities Management**: O usuário pode criar uma atividade extracurricular e adicionar alunos.
+- **Course Material Distribution**: O Professor pode distribuir materiais de estudo para os alunos
+- **Fee and Payment Processing**: O Responsável tem a opção de efetuar o pagamento da mensalidade por meio do PIX, Cartão ou Boleto. _O pagamento foi mockado devido à complexidade_.
+- **School Bus Tracking**: O Responsável tem a opção de rastrear o ônibus escolar do aluno. _O rastreamento foi mockado devido à complexidade_.
 
 ---
 

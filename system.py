@@ -1,5 +1,9 @@
-from datetime import datetime
+from datetime import datetime, time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from itertools import count
+from typing import Iterator
+
 
 # ========================
 # Classe Base (Abstrata)
@@ -17,6 +21,7 @@ class Usuario(ABC):
     def exibir_tipo(self):
         pass
 
+
 # ========================
 # Subclasses
 # ========================
@@ -32,7 +37,11 @@ class Aluno(Usuario):
     def exibir_tipo(self):
         return "Aluno"
 
+
 class Funcionario(Usuario):
+    cargo: str
+    disciplina: str
+
     def __init__(self, id, nome, senha, cargo, disciplina=None):
         super().__init__(id, nome, senha)
         self.cargo = cargo.lower()
@@ -45,6 +54,7 @@ class Funcionario(Usuario):
             return "Funcionário (diretor)"
         return f"Funcionário ({self.cargo})"
 
+
 class Responsavel(Usuario):
     def __init__(self, id, nome, senha, id_aluno):
         super().__init__(id, nome, senha)
@@ -52,6 +62,62 @@ class Responsavel(Usuario):
 
     def exibir_tipo(self):
         return "Responsável"
+
+
+@dataclass
+class Exam:
+    id: int = field(init=False)
+    title: str
+    date: datetime
+
+
+@dataclass
+class SchoolClass:
+    id: int = field(init=False)
+    name: str
+    teacher: Funcionario
+    time: time
+    students: list[Aluno] = field(default_factory=list[Aluno])
+    exams: list[Exam] = field(default_factory=list[Exam])
+    n_classes_total: int = 0
+    n_classes_passed: int = 0
+
+
+@dataclass
+class Grade:
+    id: int = field(init=False)
+    student: Aluno
+    exam: Exam
+    grade: float
+
+
+@dataclass
+class Attendance:
+    id: int = field(init=False)
+    student: Aluno
+
+
+class SchoolClassRepository:
+    __classes: dict[int, SchoolClass]
+    __id_counter: Iterator[int]
+
+    def __init__(self):
+        self.__classes = {}
+        self.__id_counter = count(1)
+
+    def add_school_class(self, school_class: SchoolClass) -> int:
+        school_class_id = next(self.__id_counter)
+        school_class.id = school_class_id
+        self.__classes.update({school_class_id: school_class})
+        return school_class_id
+
+    def get_teacher_classes(self, teacher_id: int) -> list[SchoolClass]:
+        return [
+            sclass
+            for sclass in self.__classes.values()
+            if sclass.teacher.id == teacher_id
+        ]
+
 
 # ========================
 # Classe Escola
@@ -63,6 +129,7 @@ class Escola:
         self.responsaveis = []
         self.turmas = []
         self.proximo_id = 1
+        self.sclass_repo = SchoolClassRepository()
 
         # -------------------
         # Banco de exemplos
@@ -99,7 +166,9 @@ class Escola:
     # ----------------------
     # Cadastro
     # ----------------------
-    def cadastrar_usuario(self, tipo, nome, senha, id_aluno=None, cargo=None, disciplina=None):
+    def cadastrar_usuario(
+        self, tipo, nome, senha, id_aluno=None, cargo=None, disciplina=None
+    ):
         if tipo == "aluno":
             aluno = Aluno(self.proximo_id, nome, senha)
             self.alunos.append(aluno)
@@ -109,11 +178,15 @@ class Escola:
             funcionario = Funcionario(self.proximo_id, nome, senha, cargo, disciplina)
             self.funcionarios.append(funcionario)
             if cargo == "professor":
-                print(f"Professor {nome} de {disciplina} cadastrado (ID {self.proximo_id})")
+                print(
+                    f"Professor {nome} de {disciplina} cadastrado (ID {self.proximo_id})"
+                )
             elif cargo == "diretor":
                 print(f"Diretor {nome} cadastrado (ID {self.proximo_id})")
             else:
-                print(f"Funcionário {nome} cadastrado como {cargo} (ID {self.proximo_id})")
+                print(
+                    f"Funcionário {nome} cadastrado como {cargo} (ID {self.proximo_id})"
+                )
 
         elif tipo == "responsavel":
             if not any(a.id == id_aluno for a in self.alunos):
@@ -158,7 +231,9 @@ class Escola:
         if aluno:
             data = datetime.now()
             aluno.presencas.append(data)
-            print(f"Presença registrada para {aluno.nome} em {data.strftime('%d/%m/%Y')}")
+            print(
+                f"Presença registrada para {aluno.nome} em {data.strftime('%d/%m/%Y')}"
+            )
         else:
             print("Aluno não encontrado.")
 
@@ -174,15 +249,21 @@ class Escola:
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
             aluno.materiais.append({"material": material, "disciplina": disciplina})
-            print(f"Material '{material}' de {disciplina} distribuído para {aluno.nome}")
+            print(
+                f"Material '{material}' de {disciplina} distribuído para {aluno.nome}"
+            )
         else:
             print("Aluno não encontrado.")
 
     def agendar_prova(self, id_aluno, nome_prova, data_prova, disciplina):
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
-            aluno.provas.append({"nome": nome_prova, "data": data_prova, "disciplina": disciplina})
-            print(f"Prova '{nome_prova}' de {disciplina} agendada para {aluno.nome} na data {data_prova}")
+            aluno.provas.append(
+                {"nome": nome_prova, "data": data_prova, "disciplina": disciplina}
+            )
+            print(
+                f"Prova '{nome_prova}' de {disciplina} agendada para {aluno.nome} na data {data_prova}"
+            )
         else:
             print("Aluno não encontrado.")
 
@@ -190,7 +271,9 @@ class Escola:
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
             aluno.atividades.append({"atividade": atividade, "disciplina": disciplina})
-            print(f"Atividade '{atividade}' de {disciplina} registrada para {aluno.nome}")
+            print(
+                f"Atividade '{atividade}' de {disciplina} registrada para {aluno.nome}"
+            )
         else:
             print("Aluno não encontrado.")
 
@@ -198,25 +281,49 @@ class Escola:
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
             print(f"\n📋 Dados do aluno {aluno.nome}:")
-            print("📚 Materiais:", aluno.materiais if aluno.materiais else "📭 Nenhum material disponível.")
-            print("📈 Notas:", aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.")
-            print("📅 Provas:", aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.")
-            print(f"✅ Presenças: {len(aluno.presencas)} dia(s)" if aluno.presencas else "❌ Nenhuma presença registrada.")
-            print("🎯 Atividades:", aluno.atividades if aluno.atividades else "📭 Nenhuma atividade registrada.")
+            print(
+                "📚 Materiais:",
+                aluno.materiais
+                if aluno.materiais
+                else "📭 Nenhum material disponível.",
+            )
+            print(
+                "📈 Notas:",
+                aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.",
+            )
+            print(
+                "📅 Provas:",
+                aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.",
+            )
+            print(
+                f"✅ Presenças: {len(aluno.presencas)} dia(s)"
+                if aluno.presencas
+                else "❌ Nenhuma presença registrada."
+            )
+            print(
+                "🎯 Atividades:",
+                aluno.atividades
+                if aluno.atividades
+                else "📭 Nenhuma atividade registrada.",
+            )
         else:
             print("Aluno não encontrado.")
 
     def processar_pagamento(self, id_aluno, forma_pagamento):
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
-            print(f"✅ Pagamento da mensalidade de {aluno.nome} realizado via {forma_pagamento}.")
+            print(
+                f"✅ Pagamento da mensalidade de {aluno.nome} realizado via {forma_pagamento}."
+            )
         else:
             print("Aluno não encontrado.")
 
     def rastrear_transporte(self, id_aluno):
         aluno = next((a for a in self.alunos if a.id == id_aluno), None)
         if aluno:
-            print(f"🛰️ Rastreamento do transporte escolar de {aluno.nome} em andamento...")
+            print(
+                f"🛰️ Rastreamento do transporte escolar de {aluno.nome} em andamento..."
+            )
         else:
             print("Aluno não encontrado.")
 
@@ -233,6 +340,9 @@ class Escola:
             return "Nenhum aluno matriculado."
         return [(aluno.id, aluno.nome) for aluno in self.alunos]
 
-    def gerenciar_turmas(self, nome_turma, horario):
-        self.turmas.append({"nome": nome_turma, "horario": horario})
-        print(f"🧑‍🏫 Turma '{nome_turma}' criada no horário {horario}")
+    def gerenciar_turmas(self, sclass: SchoolClass):
+        self.sclass_repo.add_school_class(sclass)
+        print(f"🧑‍🏫 Turma '{sclass.name}' criada no horário {sclass.time}")
+
+    def get_alunos(self) -> list[Aluno]:
+        return self.alunos
