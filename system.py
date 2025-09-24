@@ -1,122 +1,120 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from itertools import count
 from typing import Iterator
 
 
-# ========================
-# Classe Base (Abstrata)
-# ========================
+@dataclass
 class Usuario(ABC):
-    def __init__(self, id, nome, senha):
-        self.id = id
-        self.nome = nome
-        self._senha = senha  # encapsulamento
+    id: int
+    nome: str
+    _senha: str
 
-    def validar_senha(self, senha):
+    def validar_senha(self, senha: str):
         return self._senha == senha
 
     @abstractmethod
-    def exibir_tipo(self):
+    def exibir_tipo(self) -> str:
         pass
 
 
-# ========================
-# Subclasses
-# ========================
-class Aluno(Usuario):
-    def __init__(self, id, nome, senha):
-        super().__init__(id, nome, senha)
-        self.presencas = []
-        self.notas = []
-        self.materiais = []
-        self.atividades = []
-        self.provas = []
-
-    def exibir_tipo(self):
-        return "Aluno"
-
-
+@dataclass
 class Funcionario(Usuario):
     cargo: str
     disciplina: str
 
-    def __init__(self, id, nome, senha, cargo, disciplina=None):
-        super().__init__(id, nome, senha)
-        self.cargo = cargo.lower()
-        self.disciplina = disciplina
-
-    def exibir_tipo(self):
+    def exibir_tipo(self) -> str:
         if self.cargo == "professor":
             return f"Funcionário ({self.cargo} de {self.disciplina})"
         elif self.cargo == "diretor":
             return "Funcionário (diretor)"
         return f"Funcionário ({self.cargo})"
 
-
-class Responsavel(Usuario):
-    def __init__(self, id, nome, senha, id_aluno):
-        super().__init__(id, nome, senha)
-        self.id_aluno = id_aluno
+@dataclass
+class Aluno(Usuario):
 
     def exibir_tipo(self):
+        return "Aluno"
+
+class Responsavel(Usuario):
+    aluno: Aluno
+
+    def exibir_tipo(self) -> str:
         return "Responsável"
 
-
 @dataclass
-class Exam:
+class Turma:
     id: int = field(init=False)
-    title: str
-    date: datetime
-
-
-@dataclass
-class SchoolClass:
-    id: int = field(init=False)
-    name: str
-    teacher: Funcionario
-    time: time
-    students: list[Aluno] = field(default_factory=list[Aluno])
-    exams: list[Exam] = field(default_factory=list[Exam])
+    nome: str
+    professor: Funcionario
+    horario: time
+    alunos: list[Aluno] = field(default_factory=list[Aluno])
     n_classes_total: int = 0
     n_classes_passed: int = 0
 
 
-@dataclass
-class Grade:
-    id: int = field(init=False)
-    student: Aluno
-    exam: Exam
-    grade: float
+
+
+
+
 
 
 @dataclass
-class Attendance:
+class Prova:
     id: int = field(init=False)
-    student: Aluno
+    nome: str
+    data: date
 
 
-class SchoolClassRepository:
-    __classes: dict[int, SchoolClass]
-    __id_counter: Iterator[int]
+@dataclass
+class Nota:
+    id: int = field(init=False)
+    aluno: Aluno
+    prova: Prova
+    nota: float | None = None
+
+
+@dataclass
+class Presenca:
+    id: int = field(init=False)
+    aluno: Aluno
+
+
+class TurmaRepo:
+    __turmas: dict[int, Turma]
+    __contador: Iterator[int]
 
     def __init__(self):
-        self.__classes = {}
-        self.__id_counter = count(1)
+        self.__turmas = {}
+        self.__contador = count(1)
 
-    def add_school_class(self, school_class: SchoolClass) -> int:
-        school_class_id = next(self.__id_counter)
-        school_class.id = school_class_id
-        self.__classes.update({school_class_id: school_class})
-        return school_class_id
+    def criar_turma(self, turma: Turma) -> int:
+        turma_id = next(self.__contador)
+        turma.id = turma_id
+        self.__turmas.update({turma_id: turma})
+        return turma_id
 
-    def get_teacher_classes(self, teacher_id: int) -> list[SchoolClass]:
+    def pegar_turmas_do_professor(self, professor_id: int) -> list[Turma]:
         return [
-            sclass
-            for sclass in self.__classes.values()
-            if sclass.teacher.id == teacher_id
+            turma
+            for turma in self.__turmas.values()
+            if turma.professor.id == professor_id
         ]
+
+class ProvaRepo:
+    __provas: dict[int, Prova]
+    __notas: dict[tuple[int, int], Nota]
+    __prova_contador: Iterator[int]
+    __nota_contador: Iterator[int]
+    
+    def __init__(self):
+        self.__provas = {}
+        self.__notas = {}
+        self.__prova_contador = count(1)
+        self.__nota_contador = count(1)
+    
+    def 
 
 
 # ========================
