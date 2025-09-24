@@ -2,9 +2,8 @@ from itertools import count
 from typing import Iterator
 
 from system import (
+    ECA,
     Attendance,
-    Employee,
-    Guardian,
     Resource,
     SchoolClass,
     Exam,
@@ -68,6 +67,13 @@ class SchoolClassRepository:
     def add_resource(self, sclass_id: int, resource: Resource):
         self.__classes[sclass_id].resources.append(resource)
 
+    def get_student_sclasses(self, student_id: int) -> list[SchoolClass]:
+        return [
+            sclass
+            for sclass in self.__classes.values()
+            if student_id in [s.id for s in sclass.students]
+        ]
+
 
 class ExamRepository:
     __exams: dict[int, Exam]
@@ -107,6 +113,18 @@ class ExamRepository:
             student_exam
             for student_exam in self.__exam_results.values()
             if student_exam.student.id == student_id
+        ]
+
+    def get_student_exam_result_in_class(
+        self, student_id: int, sclass_id: int
+    ) -> list[StudentExamResult]:
+        return [
+            student_exam
+            for student_exam in self.__exam_results.values()
+            if (
+                student_exam.student.id == student_id
+                and student_exam.exam.sclass.id == sclass_id
+            )
         ]
 
     def get_students_exams(self, exam_id: int) -> list[StudentExamResult]:
@@ -164,3 +182,28 @@ class AttendanceRepository:
             result.append((sclass, percentage))
 
         return result
+
+
+class ECARepository:
+    __ecas: dict[int, ECA]
+    __id_counter: Iterator[int]
+
+    def __init__(self):
+        self.__ecas = {}
+        self.__id_counter = count(1)
+
+    def create_eca(self, eca: ECA) -> int:
+        eca_id = next(self.__id_counter)
+        eca.id = eca_id
+        self.__ecas.update({eca_id: eca})
+        return eca_id
+
+    def get_ecas(self, teacher_id: int) -> list[ECA]:
+        return [eca for eca in self.__ecas.values() if eca.teacher.id == teacher_id]
+
+    def get_student_ecas(self, student_id: int) -> list[ECA]:
+        return [
+            eca
+            for eca in self.__ecas.values()
+            if student_id in [s.id for s in eca.students]
+        ]

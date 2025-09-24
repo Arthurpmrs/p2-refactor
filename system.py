@@ -51,15 +51,24 @@ class Resource:
 
 
 @dataclass
-class SchoolClass:
+class Activity(ABC):
     id: int = field(init=False)
     name: str
     teacher: Employee
     schedule: tuple[datetime.time, list[int]]
-    resources: list[Resource] = field(default_factory=list[Resource])
     students: list[Student] = field(default_factory=list[Student])
+
+
+@dataclass
+class SchoolClass(Activity):
+    resources: list[Resource] = field(default_factory=list[Resource])
     n_classes_total: int = 0
     n_classes_passed: int = 0
+
+
+@dataclass
+class ECA(Activity):
+    pass
 
 
 @dataclass

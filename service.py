@@ -1,23 +1,20 @@
 from repository import (
     AttendanceRepository,
+    ECARepository,
     ExamRepository,
     SchoolClassRepository,
     UserRepository,
 )
-from system import Employee, Exam, Guardian, Resource, SchoolClass, Student, User
+from system import ECA, Employee, Exam, Guardian, Resource, SchoolClass, Student, User
 
 
 class School:
     def __init__(self):
-        self.students = []
-        self.funcionarios = []
-        self.responsaveis = []
-        self.turmas = []
-        self.proximo_id = 1
         self.sclass_repo = SchoolClassRepository()
         self.user_repo = UserRepository()
         self.attendance_repo = AttendanceRepository()
         self.exam_repo = ExamRepository()
+        self.eca_repo = ECARepository()
 
         # -------------------
         # Banco de exemplos
@@ -62,23 +59,19 @@ class School:
         elif tipo == "funcionario" and cargo is not None:
             funcionario = Employee("Carlos", "123", "professor", "Matemática")
             funcionario = Employee(nome, senha, cargo, disciplina)
-            self.user_repo.add_user(funcionario)
+            idx = self.user_repo.add_user(funcionario)
 
             if cargo == "professor":
-                print(
-                    f"Professor {nome} de {disciplina} cadastrado (ID {self.proximo_id})"
-                )
+                print(f"Professor {nome} de {disciplina} cadastrado (ID {idx})")
             elif cargo == "diretor":
-                print(f"Diretor {nome} cadastrado (ID {self.proximo_id})")
+                print(f"Diretor {nome} cadastrado (ID {idx})")
             else:
-                print(
-                    f"Funcionário {nome} cadastrado como {cargo} (ID {self.proximo_id})"
-                )
+                print(f"Funcionário {nome} cadastrado como {cargo} (ID {idx})")
 
         elif tipo == "responsavel" and student is not None:
             responsavel = Guardian(nome, senha, student)
-            self.user_repo.add_user(responsavel)
-            print(f"Responsável {nome} cadastrado com ID {self.proximo_id}")
+            idx = self.user_repo.add_user(responsavel)
+            print(f"Responsável {nome} cadastrado com ID {idx}")
         else:
             print("Tipo inválido para cadastro.")
             return
@@ -110,47 +103,50 @@ class School:
             f"Prova '{exam.name}' agendada para a turma {sclass.name} na data {exam.date}"
         )
 
-    def registrar_atividade(self, id_aluno, atividade, disciplina):
-        aluno = next((a for a in self.students if a.id == id_aluno), None)
-        if aluno:
-            aluno.atividades.append({"atividade": atividade, "disciplina": disciplina})
-            print(
-                f"Atividade '{atividade}' de {disciplina} registrada para {aluno.nome}"
-            )
-        else:
-            print("Aluno não encontrado.")
+    def criar_atividade_extracurricular(self, eca: ECA):
+        self.eca_repo.create_eca(eca)
+        print(
+            f"Atividade Extracurricular '{eca.name}' criada pelo funcionário {eca.teacher.name}"
+        )
 
-    def consultar_dados_aluno(self, id_aluno):
-        aluno = next((a for a in self.students if a.id == id_aluno), None)
-        if aluno:
-            print(f"\n📋 Dados do aluno {aluno.nome}:")
-            print(
-                "📚 Materiais:",
-                aluno.materiais
-                if aluno.materiais
-                else "📭 Nenhum material disponível.",
+    def consultar_dados_aluno(self, student: Student):
+        student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
+        print(f"\n📋 Dados do aluno {student.name}:")
+        for sclass in student_sclasses:
+            print(f"🏫 Turma {sclass.name} ({sclass.schedule[0]})")
+
+            if sclass.resources:
+                print("    📚 Materiais:")
+                for resource in sclass.resources:
+                    print(f"        {resource.name} ({resource.url})")
+            else:
+                print("📭 Nenhum material disponível.")
+
+            exam_results = self.exam_repo.get_student_exam_result_in_class(
+                student.id, sclass.id
             )
+            if exam_results:
+                sorted_result = sorted(exam_results, key=lambda r: r.exam.date)
+                print("    📈 Provas e Notas:")
+                for result in sorted_result:
+                    print(
+                        f"        [{result.exam.date}] {result.exam.name} ({result.grade if result.grade else 'Nota não registrada'})"
+                    )
+            else:
+                print("📭 Nenhum prova ou nota disponível.")
+
+            ats = self.attendance_repo.get_student_attendance_for_class(student, sclass)
             print(
-                "📈 Notas:",
-                aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.",
+                f"    ✅ Presença (%): {(ats * 100):.2f} (registradas {sclass.n_classes_passed} aulas)"
             )
-            print(
-                "📅 Provas:",
-                aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.",
-            )
-            print(
-                f"✅ Presenças: {len(aluno.presencas)} dia(s)"
-                if aluno.presencas
-                else "❌ Nenhuma presença registrada."
-            )
-            print(
-                "🎯 Atividades:",
-                aluno.atividades
-                if aluno.atividades
-                else "📭 Nenhuma atividade registrada.",
-            )
+
+        student_ecas = self.eca_repo.get_student_ecas(student.id)
+        if student_ecas:
+            print("\n🎯 Atividades extracurriculares:")
+            for eca in student_ecas:
+                print(f"   {eca.name} [{eca.schedule[0]}]")
         else:
-            print("Aluno não encontrado.")
+            print("📭 O aluno não participa de nenhuma atividade extracurricular.")
 
     def processar_pagamento(self, id_aluno, forma_pagamento):
         aluno = next((a for a in self.students if a.id == id_aluno), None)
