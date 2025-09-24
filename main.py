@@ -1,5 +1,6 @@
 from prompts import add_student_to_class, input_school_class, visualizar_turma
-from system import Escola, Aluno, Funcionario, Responsavel
+from system import Aluno, Funcionario, Responsavel
+from service import Escola
 
 
 # ========================
