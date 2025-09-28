@@ -244,12 +244,14 @@ class School:
                 print("        📭 Nenhuma presença registrada para essa turma.")
 
         student_ecas = self.eca_repo.get_student_ecas(student.id)
+        print("\n    🎯 Atividades extracurriculares:")
         if student_ecas:
-            print("\n🎯 Atividades extracurriculares:")
             for eca in student_ecas:
                 print(f"   {eca.name} ({eca.get_schedule()})")
         else:
-            print("📭 O aluno não participa de nenhuma atividade extracurricular.")
+            print(
+                "        📭 O aluno não participa de nenhuma atividade extracurricular."
+            )
 
     def consultar_materiais(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
@@ -314,12 +316,12 @@ class School:
 
     def consultar_ecas(self, student: Student):
         student_ecas = self.eca_repo.get_student_ecas(student.id)
+        print("🎯 Atividades extracurriculares:")
         if student_ecas:
-            print("🎯 Atividades extracurriculares:")
             for eca in student_ecas:
                 print(f"   {eca.name} ({eca.get_schedule()})")
         else:
-            print("📭 O aluno não participa de nenhuma atividade extracurricular.")
+            print("   {📭 O aluno não participa de nenhuma atividade extracurricular.")
 
     def consultar_turmas(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)

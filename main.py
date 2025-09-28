@@ -9,6 +9,7 @@ from input_helpers import (
     add_student_to_eca,
     input_eca,
     input_school_class,
+    register_student_and_guardian,
     visualizar_turma,
 )
 
@@ -62,6 +63,7 @@ def menu_funcionario(school: School, employee: Employee):
             print(" 9. Visualizar atividade extracurriculares")
             print("10. Criar atividade extracurricular")
             print("11. Adicionar alunos a atividades")
+            print("12. Matricular aluno")
             print(" 0. Sair")
         else:
             # motoristas e outros cargos: apenas presença e rastreamento
@@ -188,6 +190,10 @@ def menu_funcionario(school: School, employee: Employee):
                     students = add_student_to_eca(eca, school)
                     for student in students:
                         eca.students.append(student)
+
+            case "12":
+                register_student_and_guardian(school)
+
             case "0":
                 break
 
@@ -231,7 +237,7 @@ def main():
 
     while True:
         print("\n1 - Login")
-        print("2 - Cadastrar usuário")
+        # print("2 - Cadastrar usuário")
         print("0 - Sair")
         opcao = input("Escolha uma opção: ")
 
@@ -271,7 +277,7 @@ def main():
                 menu_responsavel(escola, usuario)
 
         # ---------------- CADASTRO ----------------
-        elif opcao == "2":
+        elif opcao == "2.":
             print("\nSelecione o tipo de usuário para cadastro:")
             print("1 - Aluno")
             print("2 - Funcionário")

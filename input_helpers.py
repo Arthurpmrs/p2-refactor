@@ -1,6 +1,6 @@
 import datetime
 from service import School
-from system import ECA, Employee, SchoolClass, Student
+from system import ECA, Employee, Guardian, SchoolClass, Student
 from utils import read_time
 
 
@@ -160,3 +160,21 @@ def visualizar_turma(sclass: SchoolClass, school: School):
             print(f"    [{exam.date}] {exam.name} ({status})")
     else:
         print("Nenhuma prova cadastrada.")
+
+
+def register_student_and_guardian(school: School):
+    print("\n--- Cadastro de Aluno ---")
+    nome_aluno = input("Nome do aluno: ").strip()
+    senha_aluno = input("Senha do aluno: ").strip()
+
+    aluno = Student(name=nome_aluno, password=senha_aluno)
+    school.user_repo.add_user(aluno)
+
+    print("\n--- Cadastro de Responsável ---")
+    nome_resp = input("Nome do responsável: ").strip()
+    senha_resp = input("Senha do responsável: ").strip()
+
+    resp = Guardian(name=nome_resp, password=senha_resp, student=aluno)
+    school.user_repo.add_user(resp)
+
+    print(f"\n✅ Matrícula de {aluno.name} realizada com sucesso!")
