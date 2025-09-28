@@ -1,4 +1,5 @@
 import datetime
+from builder import SchoolClassBuilder
 from service import School
 from system import ECA, Employee, Guardian, SchoolClass, Student
 from utils import read_time
@@ -19,12 +20,13 @@ def input_school_class(teacher: Employee) -> SchoolClass:
         except ValueError:
             print("Digite um número inteiro válido e não negativo.")
 
-    sclass = SchoolClass(
-        name=name,
-        schedule=schedule,
-        teacher=teacher,
-        n_classes_total=n_classes_total,
-        n_classes_passed=0,
+    builder = SchoolClassBuilder()
+    sclass = (
+        builder.set_name(name)
+        .set_teacher(teacher)
+        .set_schedule(schedule)
+        .set_n_classes_total(n_classes_total)
+        .build()
     )
 
     print(f"\nTurma {sclass.name} criada com sucesso!")
