@@ -13,6 +13,19 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 - 👪 Responsáveis (Pais ou responsáveis legais)
 
 ---
+
+## 🛠️ Como Executar o Projeto
+
+1. Instale o **Python 3.13 ou superior** ([Download aqui](https://www.python.org/downloads/))  
+2. Clone ou baixe este repositório  
+3. Coloque os arquivos `system.py` e `main.py` na mesma pasta  
+4. No terminal, dentro da pasta do projeto, execute:
+
+   ```bash
+   python main.py
+
+---
+
 ## Funcionalidades do sistema
 - [x] **Student Enrollment**: Aluno pode ser cadastrado no sistema.
 - [x] **Attendance Tracking**: O Professor pode registrar presenças para um Aluno. Essas informações ficam disponíveis para o próprio Aluno e para o Responsável.
@@ -27,12 +40,6 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 
 ---
 
-## 🛠️ Como Executar o Projeto
-
-1. Instale o **Python 3.13 ou superior** ([Download aqui](https://www.python.org/downloads/))  
-2. Clone ou baixe este repositório  
-3. Coloque os arquivos `system.py` e `main.py` na mesma pasta  
-4. No terminal, dentro da pasta do projeto, execute:
-
-   ```bash
-   python main.py
+## Padrões de Projeto implementados
+- **Singleton**: A classe `School` concentra a gestão dos dados da instituição (possui as instâncias dos repositórios). Ao invés de passar a instância como argumento para várias partes do código, foi usado o padrão Singleton. Assim, basta instanciar a classe onde ela é necessária e teremos os mesmos dados. Tudo fica centralizado em uma única instância.
+- **Builder**: A classe `SchoolClass` é um dos pontos chaves da aplicação. Como ela tem vários atributos, alguns opcionais para certas ocasições, o padrão builder é bem adequado.
