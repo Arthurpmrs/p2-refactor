@@ -20,7 +20,7 @@ class User(ABC):
         return self.password == password
 
     @abstractmethod
-    def show_type(self) -> str:
+    def get_type(self) -> str:
         pass
 
 
@@ -29,7 +29,7 @@ class Employee(User):
     position: str
     subject: str | None = None
 
-    def show_type(self) -> str:
+    def get_type(self) -> str:
         if self.position == "professor":
             return f"Funcionário ({self.position} de {self.subject})"
         elif self.position == "diretor":
@@ -39,7 +39,7 @@ class Employee(User):
 
 @dataclass
 class Student(User):
-    def show_type(self):
+    def get_type(self):
         return "Aluno"
 
 
@@ -47,7 +47,7 @@ class Student(User):
 class Guardian(User):
     student: Student
 
-    def show_type(self) -> str:
+    def get_type(self) -> str:
         return "Responsável"
 
 

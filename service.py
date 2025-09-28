@@ -42,39 +42,9 @@ class School:
 
             self._initialized = True
 
-    def cadastrar_usuario(
-        self,
-        tipo: str,
-        nome: str,
-        senha: str,
-        cargo: str | None = None,
-        disciplina: str | None = None,
-        student: Student | None = None,
-    ):
-        if tipo == "aluno":
-            aluno = Student(nome, senha)
-            idx = self.user_repo.add_user(aluno)
-            print(f"Aluno {nome} cadastrado com ID {idx}")
-
-        elif tipo == "funcionario" and cargo is not None:
-            funcionario = Employee("Carlos", "123", "professor", "Matemática")
-            funcionario = Employee(nome, senha, cargo, disciplina)
-            idx = self.user_repo.add_user(funcionario)
-
-            if cargo == "professor":
-                print(f"Professor {nome} de {disciplina} cadastrado (ID {idx})")
-            elif cargo == "diretor":
-                print(f"Diretor {nome} cadastrado (ID {idx})")
-            else:
-                print(f"Funcionário {nome} cadastrado como {cargo} (ID {idx})")
-
-        elif tipo == "responsavel" and student is not None:
-            responsavel = Guardian(nome, senha, student)
-            idx = self.user_repo.add_user(responsavel)
-            print(f"Responsável {nome} cadastrado com ID {idx}")
-        else:
-            print("Tipo inválido para cadastro.")
-            return
+    def register_user(self, user: User):
+        idx = self.user_repo.add_user(user)
+        print(f"{user.get_type()} cadastrado (ID {idx})")
 
     def login(self, nome: str, senha: str, tipo: str) -> User | None:
         try:

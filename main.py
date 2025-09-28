@@ -1,16 +1,13 @@
 import os
 from system import Employee, Exam, Guardian, PaymentMethod, Resource, Student
 from service import School
-from utils import (
-    read_date,
-    select_item,
-)
+from utils import read_date, select_item
 from input_helpers import (
     add_student_to_class,
     add_student_to_eca,
     input_eca,
     input_school_class,
-    register_student_and_guardian,
+    register_users,
     visualizar_turma,
 )
 
@@ -72,7 +69,7 @@ def menu_funcionario(employee: Employee):
             print(" 9. Visualizar atividade extracurriculares")
             print("10. Criar atividade extracurricular")
             print("11. Adicionar alunos a atividades")
-            print("12. Matricular aluno")
+            print("12. Cadastrar usuários")
             print(" 0. Sair")
         else:
             # motoristas e outros cargos: apenas presença e rastreamento
@@ -201,7 +198,7 @@ def menu_funcionario(employee: Employee):
                         eca.students.append(student)
 
             case "12":
-                register_student_and_guardian()
+                register_users()
 
             case "0":
                 break
@@ -289,7 +286,7 @@ def main():
                 input("Clique Enter para tentar novamente.")
                 continue
 
-            print(f"\n✅ Login realizado como {usuario.show_type()}.")
+            print(f"\n✅ Login realizado como {usuario.get_type()}.")
 
             if isinstance(usuario, Student):
                 menu_aluno(usuario)
@@ -297,75 +294,6 @@ def main():
                 menu_funcionario(usuario)
             elif isinstance(usuario, Guardian):
                 menu_responsavel(usuario)
-
-        # ---------------- CADASTRO ----------------
-        elif opcao == "2.":
-            print("\nSelecione o tipo de usuário para cadastro:")
-            print("1 - Aluno")
-            print("2 - Funcionário")
-            print("3 - Responsável")
-            tipo_opcao = input("\nEscolha uma opção: ")
-
-            match tipo_opcao:
-                case "1":
-                    tipo = "aluno"
-                case "2":
-                    tipo = "funcionario"
-                case "3":
-                    tipo = "responsavel"
-                case _:
-                    print("❌ Opção inválida.")
-                    continue
-
-            nome = input("Nome: ")
-            senha = input("Senha: ")
-
-            if tipo == "funcionario":
-                print("\nSelecione o cargo:")
-                print("1 - Diretor")
-                print("2 - Professor")
-                print("3 - Motorista")
-                print("4 - Outro")
-                cargo_opcao = input("\nEscolha uma opção: ")
-
-                match cargo_opcao:
-                    case "1":
-                        cargo = "diretor"
-                        disciplina = input(
-                            "Digite a disciplina que o diretor irá acompanhar (ou deixe vazio): "
-                        )
-                        if disciplina.strip() == "":
-                            disciplina = None
-                    case "2":
-                        cargo = "professor"
-                        disciplina = input(
-                            "Digite a disciplina que o professor irá lecionar: "
-                        )
-                    case "3":
-                        cargo = "motorista"
-                        disciplina = None
-                    case "4":
-                        cargo = input("Digite o nome do cargo: ")
-                        disciplina = None
-                    case _:
-                        print("❌ Opção inválida.")
-                        continue
-
-                escola.cadastrar_usuario(
-                    tipo, nome, senha, cargo=cargo, disciplina=disciplina
-                )
-
-            elif tipo == "responsavel":
-                student = select_item(
-                    escola.get_alunos(),
-                    display_fn=lambda s: f"{s.name} (ID: {s.id})",
-                    title="Selecione o aluno",
-                )
-
-                escola.cadastrar_usuario(tipo, nome, senha, student=student)
-
-            else:
-                escola.cadastrar_usuario(tipo, nome, senha)
 
         elif opcao == "0":
             print("Saindo do sistema...")

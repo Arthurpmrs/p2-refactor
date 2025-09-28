@@ -53,3 +53,47 @@ class SchoolClassBuilder:
             n_classes_total=self._n_classes_total,
             n_classes_passed=self._n_classes_passed,
         )
+
+
+class EmployeeBuilder:
+    def __init__(self):
+        self._name = None
+        self._password = None
+        self._position = None
+        self._subject = None
+
+    def set_name(self, name: str):
+        self._name = name
+        return self
+
+    def set_password(self, password: str):
+        self._password = password
+        return self
+
+    def as_professor(self, subject: str):
+        self._position = "professor"
+        self._subject = subject
+        return self
+
+    def as_director(self):
+        self._position = "diretor"
+        self._subject = None
+        return self
+
+    def as_staff(self, position: str):
+        """Para outros cargos administrativos"""
+        self._position = position
+        self._subject = None
+        return self
+
+    def build(self) -> Employee:
+        if not self._name or not self._password or not self._position:
+            raise ValueError(
+                "Nome, senha e posição são obrigatórios para criar um Employee"
+            )
+        return Employee(
+            name=self._name,
+            password=self._password,
+            position=self._position,
+            subject=self._subject,
+        )

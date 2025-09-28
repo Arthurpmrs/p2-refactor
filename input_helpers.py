@@ -1,5 +1,12 @@
 import datetime
+import os
 from builder import SchoolClassBuilder
+from factory import (
+    EmployeeRegistrator,
+    GuardianRegistrator,
+    Registrator,
+    StudentRegistrator,
+)
 from service import School
 from system import ECA, Employee, Guardian, SchoolClass, Student
 from utils import read_time
@@ -172,3 +179,32 @@ def register_student_and_guardian():
     school.user_repo.add_user(resp)
 
     print(f"\n✅ Matrícula de {aluno.name} realizada com sucesso!")
+
+
+def register_users():
+    school = School()
+    registrator: Registrator | None = None
+
+    while True:
+        os.system("clear")
+        print("Selecione o tipo de usuário:")
+        print("1 - Aluno")
+        print("2 - Funcionário")
+        print("3 - Responsável")
+
+        tipo_opcao = input("\nEscolha uma opção: ")
+        match tipo_opcao:
+            case "1":
+                registrator = StudentRegistrator()
+            case "2":
+                registrator = EmployeeRegistrator()
+            case "3":
+                registrator = GuardianRegistrator()
+            case _:
+                print("❌ Opção inválida.")
+                input("Clique Enter para voltar ao menu.")
+                continue
+        break
+
+    user = registrator.create_user()
+    school.register_user(user)
