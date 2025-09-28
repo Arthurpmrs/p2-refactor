@@ -1,6 +1,13 @@
 import datetime
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import StrEnum
+
+
+class PaymentMethod(StrEnum):
+    PIX = "PIX"
+    CREDIT_CARD = "Cartão de Crédito"
+    BOLETO = "Boleto"
 
 
 @dataclass
@@ -55,8 +62,11 @@ class Activity(ABC):
     id: int = field(init=False)
     name: str
     teacher: Employee
-    schedule: tuple[datetime.time, list[int]]
+    schedule: datetime.time
     students: list[Student] = field(default_factory=list[Student])
+
+    def get_schedule(self) -> str:
+        return self.schedule.strftime("%H:%M")
 
 
 @dataclass
@@ -81,7 +91,6 @@ class Exam:
 
 @dataclass
 class StudentExamResult:
-    id: int = field(init=False)
     student: Student
     exam: Exam
     grade: float | None = None

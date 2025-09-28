@@ -42,6 +42,9 @@ class UserRepository:
 
         return selected_user
 
+    def get_students(self) -> list[Student]:
+        return [user for user in self.__users.values() if isinstance(user, Student)]
+
 
 class SchoolClassRepository:
     __classes: dict[int, SchoolClass]
@@ -148,12 +151,16 @@ class AttendanceRepository:
 
     def get_student_attendance_for_class(
         self, student: Student, sclass: SchoolClass
-    ) -> float:
+    ) -> float | None:
         student_ats = [
             at
             for at in self.__attendance
             if at.student.id == student.id and at.sclass.id == sclass.id
         ]
+
+        if sclass.n_classes_passed == 0:
+            return
+
         return len(student_ats) / sclass.n_classes_passed
 
     def get_student_attendances(

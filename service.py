@@ -1,3 +1,4 @@
+import datetime
 from repository import (
     AttendanceRepository,
     ECARepository,
@@ -5,7 +6,18 @@ from repository import (
     SchoolClassRepository,
     UserRepository,
 )
-from system import ECA, Employee, Exam, Guardian, Resource, SchoolClass, Student, User
+from system import (
+    ECA,
+    Employee,
+    Exam,
+    Guardian,
+    PaymentMethod,
+    Resource,
+    SchoolClass,
+    Student,
+    User,
+)
+from utils import generate_random_hash
 
 
 class School:
@@ -26,9 +38,66 @@ class School:
         aluno2 = Student("Maria", "123")
         self.user_repo.add_user(aluno2)
 
-        # Criando professor
-        prof = Employee("Carlos", "123", "professor", "Matemática")
-        self.user_repo.add_user(prof)
+        aluno3 = Student("Eduardo", "123")
+        self.user_repo.add_user(aluno3)
+
+        aluno4 = Student("Eduarda", "123")
+        self.user_repo.add_user(aluno4)
+
+        # Criando professor e suas turmas
+        prof1 = Employee("Carlos", "123", "professor", "Matemática")
+        self.user_repo.add_user(prof1)
+
+        turma1 = SchoolClass(
+            name="Matemática 1",
+            teacher=prof1,
+            schedule=datetime.time(9, 20),
+            students=[aluno1, aluno2],
+        )
+        self.sclass_repo.create_sclass(turma1)
+        turma2 = SchoolClass(
+            name="Matemática 2",
+            teacher=prof1,
+            schedule=datetime.time(11, 10),
+            students=[aluno3, aluno4],
+        )
+        self.sclass_repo.create_sclass(turma2)
+
+        prova1_turma1 = Exam(turma1, "Prova 1 - Funções", datetime.date(2025, 9, 16))
+        self.exam_repo.create_exam(turma1, prova1_turma1)
+
+        self.exam_repo.register_grade(prova1_turma1, aluno1, 7.5)
+        self.exam_repo.register_grade(prova1_turma1, aluno2, 10.0)
+
+        prova2_turma1 = Exam(
+            turma1, "Prova 2 - Análise Combinatória", datetime.date(2025, 10, 29)
+        )
+        self.exam_repo.create_exam(turma1, prova2_turma1)
+
+        prova1_turma2 = Exam(turma2, "Prova 1 - Vetores", datetime.date(2025, 10, 3))
+        self.exam_repo.create_exam(turma1, prova1_turma2)
+
+        prof2 = Employee("Luiz", "123", "professor", "Português")
+        self.user_repo.add_user(prof2)
+
+        turma3 = SchoolClass(
+            name="Gramática 1",
+            teacher=prof2,
+            schedule=datetime.time(13, 30),
+            students=[aluno1, aluno2],
+        )
+        self.sclass_repo.create_sclass(turma3)
+
+        prof3 = Employee("Sergio", "123", "professor", "Educação Física")
+        self.user_repo.add_user(prof3)
+
+        eca1 = ECA(
+            name="Natação",
+            teacher=prof3,
+            schedule=datetime.time(7, 30),
+            students=[aluno2, aluno4],
+        )
+        self.eca_repo.create_eca(eca1)
 
         # Criando diretor
         diretor = Employee("Fernanda", "123", "diretor")
@@ -38,9 +107,18 @@ class School:
         motorista = Employee("José", "123", "motorista")
         self.user_repo.add_user(motorista)
 
-        # Criando responsável (ligado ao aluno João)
-        responsavel = Guardian("Ana", "123", aluno1)
+        # Criando responsáveis
+        responsavel = Guardian("Ana", "123", aluno2)
         self.user_repo.add_user(responsavel)
+
+        responsavel2 = Guardian("Orlando", "123", aluno1)
+        self.user_repo.add_user(responsavel2)
+
+        responsavel3 = Guardian("Estefano", "123", aluno3)
+        self.user_repo.add_user(responsavel3)
+
+        responsavel4 = Guardian("Marlene", "123", aluno4)
+        self.user_repo.add_user(responsavel4)
 
     def cadastrar_usuario(
         self,
@@ -53,8 +131,8 @@ class School:
     ):
         if tipo == "aluno":
             aluno = Student(nome, senha)
-            self.user_repo.add_user(aluno)
-            print(f"Aluno {nome} cadastrado com ID {self.proximo_id}")
+            idx = self.user_repo.add_user(aluno)
+            print(f"Aluno {nome} cadastrado com ID {idx}")
 
         elif tipo == "funcionario" and cargo is not None:
             funcionario = Employee("Carlos", "123", "professor", "Matemática")
@@ -111,77 +189,156 @@ class School:
 
     def consultar_dados_aluno(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
-        print(f"\n📋 Dados do aluno {student.name}:")
-        for sclass in student_sclasses:
-            print(f"🏫 Turma {sclass.name} ({sclass.schedule[0]})")
+        print(f"\n📋 Dados do(a) aluno(a) {student.name}:")
+        if not student_sclasses:
+            print("    📭 O(A) aluno(a) não foi cadastrado(a) em uma turma.")
 
+        for sclass in student_sclasses:
+            print(f"\n🏫 Turma {sclass.name} ({sclass.get_schedule()})")
+
+            print("    📚 Materiais:")
             if sclass.resources:
-                print("    📚 Materiais:")
                 for resource in sclass.resources:
                     print(f"        {resource.name} ({resource.url})")
             else:
-                print("📭 Nenhum material disponível.")
+                print("        📭 Nenhum material disponível.")
+
+            exam_results = self.exam_repo.get_student_exam_result_in_class(
+                student.id, sclass.id
+            )
+            print("    📈 Provas e Notas:")
+            if exam_results:
+                sorted_result = sorted(exam_results, key=lambda r: r.exam.date)
+                for result in sorted_result:
+                    status = ""
+                    if result.exam.date > datetime.date.today():
+                        status = "prova agendada"
+                    elif result.grade is None:
+                        status = "nota não registrada"
+                    elif result.grade:
+                        status = f"nota {result.grade}"
+
+                    print(f"        [{result.exam.date}] {result.exam.name} ({status})")
+            else:
+                print("        📭 Nenhum prova ou nota disponível.")
+
+            ats = self.attendance_repo.get_student_attendance_for_class(student, sclass)
+            print("    📅 Presenças:")
+            if ats is not None:
+                print(
+                    f"        ✅ Presença (%): {(ats * 100):.2f} (registradas {sclass.n_classes_passed} aulas)"
+                )
+            else:
+                print("        📭 Nenhuma presença registrada para essa turma.")
+
+        student_ecas = self.eca_repo.get_student_ecas(student.id)
+        if student_ecas:
+            print("\n🎯 Atividades extracurriculares:")
+            for eca in student_ecas:
+                print(f"   {eca.name} ({eca.get_schedule()})")
+        else:
+            print("📭 O aluno não participa de nenhuma atividade extracurricular.")
+
+    def consultar_materiais(self, student: Student):
+        student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
+
+        print("📚 Materiais:")
+        if not student_sclasses:
+            print("    📭 O(A) não foi cadastrado(a) em uma turma.")
+
+        for sclass in student_sclasses:
+            print(f"🏫 Turma {sclass.name} ({sclass.get_schedule()})")
+            if sclass.resources:
+                for resource in sclass.resources:
+                    print(f"    {resource.name} ({resource.url})")
+            else:
+                print("    📭 Nenhum material disponível.")
+
+    def consultar_notas_e_provas(self, student: Student):
+        student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
+
+        print("📈 Provas e Notas:")
+        if not student_sclasses:
+            print("    📭 O(A) não foi cadastrado(a) em uma turma.")
+
+        for sclass in student_sclasses:
+            print(f"🏫 Turma {sclass.name} ({sclass.get_schedule()})")
 
             exam_results = self.exam_repo.get_student_exam_result_in_class(
                 student.id, sclass.id
             )
             if exam_results:
                 sorted_result = sorted(exam_results, key=lambda r: r.exam.date)
-                print("    📈 Provas e Notas:")
                 for result in sorted_result:
-                    print(
-                        f"        [{result.exam.date}] {result.exam.name} ({result.grade if result.grade else 'Nota não registrada'})"
-                    )
+                    status = ""
+                    if result.exam.date > datetime.date.today():
+                        status = "prova agendada"
+                    elif result.grade is None:
+                        status = "nota não registrada"
+                    elif result.grade:
+                        status = f"nota {result.grade}"
+
+                    print(f"        [{result.exam.date}] {result.exam.name} ({status})")
             else:
-                print("📭 Nenhum prova ou nota disponível.")
+                print("    📭 Nenhum prova ou nota disponível.")
+
+    def consultar_presencas(self, student: Student):
+        student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
+
+        print("📅 Presenças:")
+        if not student_sclasses:
+            print("    📭 O(A) não foi cadastrado(a) em uma turma.")
+
+        for sclass in student_sclasses:
+            print(f"🏫 Turma {sclass.name} ({sclass.get_schedule()})")
 
             ats = self.attendance_repo.get_student_attendance_for_class(student, sclass)
-            print(
-                f"    ✅ Presença (%): {(ats * 100):.2f} (registradas {sclass.n_classes_passed} aulas)"
-            )
+            if ats is not None:
+                print(
+                    f"    ✅ Presença (%): {(ats * 100):.2f} (registradas {sclass.n_classes_passed} aulas)"
+                )
+            else:
+                print("    📭 Nenhuma presença registrada para essa turma.")
 
+    def consultar_ecas(self, student: Student):
         student_ecas = self.eca_repo.get_student_ecas(student.id)
         if student_ecas:
-            print("\n🎯 Atividades extracurriculares:")
+            print("🎯 Atividades extracurriculares:")
             for eca in student_ecas:
-                print(f"   {eca.name} [{eca.schedule[0]}]")
+                print(f"   {eca.name} ({eca.get_schedule()})")
         else:
             print("📭 O aluno não participa de nenhuma atividade extracurricular.")
 
-    def processar_pagamento(self, id_aluno, forma_pagamento):
-        aluno = next((a for a in self.students if a.id == id_aluno), None)
-        if aluno:
+    def consultar_turmas(self, student: Student):
+        student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
+
+        print("🏫 Turmas:")
+        for sclass in student_sclasses:
+            print(f"    {sclass.name} ({sclass.get_schedule()})")
+
+    def processar_pagamento(self, student: Student, method: PaymentMethod):
+        if method == PaymentMethod.BOLETO:
             print(
-                f"✅ Pagamento da mensalidade de {aluno.nome} realizado via {forma_pagamento}."
+                f"✅ Boleto gerado para {student.name}. Clique no link abaixo para visualizar:"
+            )
+            print(
+                f"🔗 www.payment.school.com.br/{student.id}/pdf/{generate_random_hash()}"
             )
         else:
-            print("Aluno não encontrado.")
-
-    def rastrear_transporte(self, id_aluno):
-        aluno = next((a for a in self.students if a.id == id_aluno), None)
-        if aluno:
             print(
-                f"🛰️ Rastreamento do transporte escolar de {aluno.nome} em andamento..."
+                f"⏳ Clique no link abaixo para concluir o pagamento da mensalidade de {student.name}."
             )
-        else:
-            print("Aluno não encontrado.")
+            print(f"🔗 www.payment.school.com.br/{student.id}/{generate_random_hash()}")
 
-    def remover_aluno(self, id_aluno):
-        aluno = next((a for a in self.students if a.id == id_aluno), None)
-        if aluno:
-            self.students.remove(aluno)
-            print(f"🗑️ Aluno {aluno.nome} removido com sucesso.")
-        else:
-            print("Aluno não encontrado.")
-
-    def consultar_alunos_matriculados(self):
-        if not self.students:
-            return "Nenhum aluno matriculado."
-        return [(aluno.id, aluno.nome) for aluno in self.students]
+    def rastrear_transporte(self, student: Student):
+        print(
+            f"🛰️ Transporte de {student.name} em andamento. Clique no link para acompanhar: "
+        )
+        print(f"🔗 www.transport.school.com.br/{student.id}/{generate_random_hash()}")
 
     def gerenciar_turmas(self, sclass: SchoolClass):
-        self.turma_repo.criar_turma(sclass)
-        print(f"🧑‍🏫 Turma '{sclass.name}' criada no horário {sclass.time}")
+        self.sclass_repo.create_sclass(sclass)
+        print(f"🧑‍🏫 Turma '{sclass.name}' criada no horário {sclass.get_schedule()}")
 
-    def get_alunos(self) -> list[Aluno]:
-        return self.students
+    def get_alunos(self) -> list[Student]:
+        return self.user_repo.get_students()

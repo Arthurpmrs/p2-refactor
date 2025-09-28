@@ -1,61 +1,44 @@
-from prompts import add_student_to_class, input_school_class, visualizar_turma
-from system import Aluno, Funcionario, Responsavel
-from service import Escola
+# from prompts import add_student_to_class, input_school_class, visualizar_turma
+from system import Employee, Guardian, PaymentMethod, Student
+from service import School
+from utils import select_item
 
 
 # ========================
 # Menus
 # ========================
-def menu_aluno(escola, aluno):
-    print(f"\n🎓 Bem-vindo(a), {aluno.nome}!")
+def menu_aluno(school: School, student: Student):
+    print(f"\n🎓 Bem-vindo(a), {student.name}!")
     while True:
         print("\n--- Menu do Aluno ---")
-        print("1. Ver materiais")
-        print("2. Ver notas")
-        print("3. Ver provas agendadas")
+        print("1. Ver turmas")
+        print("2. Ver materiais")
+        print("3. Ver provas e notas")
         print("4. Ver presenças")
         print("5. Ver atividades extracurriculares")
         print("0. Sair")
+
         opcao = input("Escolha uma opção: ")
 
         match opcao:
             case "1":
-                print(
-                    "📚 Materiais:",
-                    aluno.materiais
-                    if aluno.materiais
-                    else "📭 Nenhum material disponível.",
-                )
+                school.consultar_turmas(student)
             case "2":
-                print(
-                    "📊 Notas:",
-                    aluno.notas if aluno.notas else "📉 Nenhuma nota registrada.",
-                )
+                school.consultar_materiais(student)
             case "3":
-                print(
-                    "📝 Provas:",
-                    aluno.provas if aluno.provas else "📭 Nenhuma prova agendada.",
-                )
+                school.consultar_notas_e_provas(student)
             case "4":
-                print(
-                    f"✅ Presenças: {len(aluno.presencas)} dia(s)"
-                    if aluno.presencas
-                    else "❌ Nenhuma presença registrada."
-                )
+                school.consultar_presencas(student)
             case "5":
-                print(
-                    "🎯 Atividades:",
-                    aluno.atividades
-                    if aluno.atividades
-                    else "📭 Nenhuma atividade registrada.",
-                )
+                school.consultar_ecas(student)
             case "0":
                 break
             case _:
                 print("Opção inválida.")
 
 
-def menu_funcionario(escola: Escola, funcionario: Funcionario):
+def menu_funcionario(school: School, employee: Employee):
+    return
     print(f"\n👨‍🏫 Bem-vindo(a), {funcionario.nome} ({funcionario.cargo})!")
     while True:
         print("\n--- Menu do Funcionário ---")
@@ -187,8 +170,9 @@ def menu_funcionario(escola: Escola, funcionario: Funcionario):
                 print("Opção inválida.")
 
 
-def menu_responsavel(escola, responsavel):
-    print(f"\n👪 Bem-vindo, {responsavel.nome}!")
+def menu_responsavel(school: School, guardian: Guardian):
+    print(f"\n👪 Bem-vindo, {guardian.name}!")
+
     while True:
         print("\n--- Menu do Responsável ---")
         print("1. Consultar dados do aluno")
@@ -199,30 +183,31 @@ def menu_responsavel(escola, responsavel):
 
         match opcao:
             case "1":
-                escola.consultar_dados_aluno(responsavel.id_aluno)
+                school.consultar_dados_aluno(guardian.student)
             case "2":
                 print("💳 Formas de pagamento: PIX | Cartão | Boleto")
                 forma_pagamento = input("Digite a forma de pagamento: ")
-                escola.processar_pagamento(responsavel.id_aluno, forma_pagamento)
+                try:
+                    payment_method = PaymentMethod[forma_pagamento.upper()]
+                    school.processar_pagamento(guardian.student, payment_method)
+                except Exception:
+                    print("Opção inválida.")
             case "3":
-                escola.rastrear_transporte(responsavel.id_aluno)
+                school.rastrear_transporte(guardian.student)
             case "0":
                 break
             case _:
                 print("Opção inválida.")
 
 
-# ========================
-# Main
-# ========================
 def main():
-    escola = Escola()
+    escola = School()
     print("\n=== 🎓 Sistema de Gestão Escolar ===")
 
     while True:
         print("\n1 - Login")
         print("2 - Cadastrar usuário")
-        print("3 - Sair")
+        print("0 - Sair")
         opcao = input("Escolha uma opção: ")
 
         # ---------------- LOGIN ----------------
@@ -247,15 +232,17 @@ def main():
             nome = input("Nome: ")
             senha = input("Senha: ")
             usuario = escola.login(nome, senha, tipo)
+
             if usuario is None:
                 continue
-            print(f"\n✅ Login realizado como {usuario.exibir_tipo()}.")
 
-            if isinstance(usuario, Aluno):
+            print(f"\n✅ Login realizado como {usuario.show_type()}.")
+
+            if isinstance(usuario, Student):
                 menu_aluno(escola, usuario)
-            elif isinstance(usuario, Funcionario):
+            elif isinstance(usuario, Employee):
                 menu_funcionario(escola, usuario)
-            elif isinstance(usuario, Responsavel):
+            elif isinstance(usuario, Guardian):
                 menu_responsavel(escola, usuario)
 
         # ---------------- CADASTRO ----------------
@@ -316,19 +303,18 @@ def main():
                 )
 
             elif tipo == "responsavel":
-                try:
-                    id_aluno = int(
-                        input("ID do aluno que o responsável irá acompanhar: ")
-                    )
-                except ValueError:
-                    print("ID inválido.")
-                    continue
-                escola.cadastrar_usuario(tipo, nome, senha, id_aluno=id_aluno)
+                student = select_item(
+                    escola.get_alunos(),
+                    display_fn=lambda s: f"{s.name} (ID: {s.id})",
+                    title="Selecione o aluno",
+                )
+
+                escola.cadastrar_usuario(tipo, nome, senha, student=student)
 
             else:
                 escola.cadastrar_usuario(tipo, nome, senha)
 
-        elif opcao == "3":
+        elif opcao == "0":
             print("Saindo do sistema...")
             break
         else:
@@ -336,4 +322,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\nSistema encerrado pelo usuário.")
