@@ -15,7 +15,9 @@ from input_helpers import (
 )
 
 
-def menu_aluno(school: School, student: Student):
+def menu_aluno(student: Student):
+    school = School()
+
     while True:
         os.system("clear")
         print(f"🎓 Bem-vindo(a), {student.name}!")
@@ -49,7 +51,9 @@ def menu_aluno(school: School, student: Student):
         input("\nClique Enter para voltar ao menu.")
 
 
-def menu_funcionario(school: School, employee: Employee):
+def menu_funcionario(employee: Employee):
+    school = School()
+
     while True:
         os.system("clear")
         print(f"👨‍🏫 Bem-vindo(a), {employee.name} ({employee.position})!")
@@ -155,7 +159,7 @@ def menu_funcionario(school: School, employee: Employee):
                 )
 
                 if sclass is not None:
-                    visualizar_turma(sclass, school)
+                    visualizar_turma(sclass)
 
             case "7":
                 sclass = input_school_class(employee)
@@ -169,7 +173,7 @@ def menu_funcionario(school: School, employee: Employee):
                 )
 
                 if sclass is not None:
-                    students = add_student_to_class(sclass, school)
+                    students = add_student_to_class(sclass)
                     school.add_students_to_sclass(sclass, students)
 
             case "9":
@@ -192,12 +196,12 @@ def menu_funcionario(school: School, employee: Employee):
                     title="Selecione uma atividade extracurricular",
                 )
                 if eca:
-                    students = add_student_to_eca(eca, school)
+                    students = add_student_to_eca(eca)
                     for student in students:
                         eca.students.append(student)
 
             case "12":
-                register_student_and_guardian(school)
+                register_student_and_guardian()
 
             case "0":
                 break
@@ -208,7 +212,9 @@ def menu_funcionario(school: School, employee: Employee):
         input("\nClique Enter para voltar ao menu.")
 
 
-def menu_responsavel(school: School, guardian: Guardian):
+def menu_responsavel(guardian: Guardian):
+    school = School()
+
     while True:
         os.system("clear")
         print(f"👪 Bem-vindo, {guardian.name}!")
@@ -286,11 +292,11 @@ def main():
             print(f"\n✅ Login realizado como {usuario.show_type()}.")
 
             if isinstance(usuario, Student):
-                menu_aluno(escola, usuario)
+                menu_aluno(usuario)
             elif isinstance(usuario, Employee):
-                menu_funcionario(escola, usuario)
+                menu_funcionario(usuario)
             elif isinstance(usuario, Guardian):
-                menu_responsavel(escola, usuario)
+                menu_responsavel(usuario)
 
         # ---------------- CADASTRO ----------------
         elif opcao == "2.":

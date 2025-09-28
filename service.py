@@ -21,116 +21,26 @@ from utils import generate_random_hash, select_item
 
 
 class School:
+    __instance = None
+    _initialized = False
+
+    def __new__(cls):
+        if School.__instance is None:
+            School.__instance = super().__new__(cls)
+            School.__instance._initialized = False
+        return School.__instance
+
     def __init__(self):
-        self.sclass_repo = SchoolClassRepository()
-        self.user_repo = UserRepository()
-        self.attendance_repo = AttendanceRepository()
-        self.exam_repo = ExamRepository()
-        self.eca_repo = ECARepository()
+        if not self._initialized:
+            self.sclass_repo = SchoolClassRepository()
+            self.user_repo = UserRepository()
+            self.attendance_repo = AttendanceRepository()
+            self.exam_repo = ExamRepository()
+            self.eca_repo = ECARepository()
 
-        # -------------------
-        # Banco de exemplos
-        # -------------------
-        # Criando alunos
-        aluno1 = Student("João", "123")
-        self.user_repo.add_user(aluno1)
+            self.populate()
 
-        aluno2 = Student("Maria", "123")
-        self.user_repo.add_user(aluno2)
-
-        aluno3 = Student("Eduardo", "123")
-        self.user_repo.add_user(aluno3)
-
-        aluno4 = Student("Eduarda", "123")
-        self.user_repo.add_user(aluno4)
-
-        aluno5 = Student("Isabel", "123")
-        self.user_repo.add_user(aluno5)
-
-        # Criando professor e suas turmas
-        prof1 = Employee("Carlos", "123", "professor", "Matemática")
-        self.user_repo.add_user(prof1)
-
-        turma1 = SchoolClass(
-            name="Matemática 1",
-            teacher=prof1,
-            schedule=datetime.time(9, 20),
-            students=[aluno1, aluno2],
-        )
-        self.sclass_repo.create_sclass(turma1)
-        turma2 = SchoolClass(
-            name="Matemática 2",
-            teacher=prof1,
-            schedule=datetime.time(11, 10),
-            students=[aluno3, aluno4],
-        )
-        self.sclass_repo.create_sclass(turma2)
-
-        prova1_turma1 = Exam(turma1, "Prova 1 - Funções", datetime.date(2025, 8, 15))
-        self.exam_repo.create_exam(turma1, prova1_turma1)
-
-        self.exam_repo.register_grade(prova1_turma1, aluno1, 7.5)
-        self.exam_repo.register_grade(prova1_turma1, aluno2, 10.0)
-        prova1_turma1.grades_submitted = True
-
-        prova2_turma1 = Exam(
-            turma1, "Prova 2 - Análise Combinatória", datetime.date(2025, 9, 26)
-        )
-        self.exam_repo.create_exam(turma1, prova2_turma1)
-
-        prova3_turma1 = Exam(
-            turma1, "Prova 3 - Probabilidade", datetime.date(2025, 10, 29)
-        )
-        self.exam_repo.create_exam(turma1, prova3_turma1)
-
-        prova1_turma2 = Exam(turma2, "Prova 1 - Vetores", datetime.date(2025, 10, 3))
-        self.exam_repo.create_exam(turma1, prova1_turma2)
-
-        prof2 = Employee("Luiz", "123", "professor", "Português")
-        self.user_repo.add_user(prof2)
-
-        turma3 = SchoolClass(
-            name="Gramática 1",
-            teacher=prof2,
-            schedule=datetime.time(13, 30),
-            students=[aluno1, aluno2],
-        )
-        self.sclass_repo.create_sclass(turma3)
-
-        prof3 = Employee("Sergio", "123", "professor", "Educação Física")
-        self.user_repo.add_user(prof3)
-
-        eca1 = ECA(
-            name="Natação",
-            teacher=prof3,
-            schedule=datetime.time(7, 30),
-            students=[aluno2, aluno4],
-        )
-        self.eca_repo.create_eca(eca1)
-
-        # Criando diretor
-        diretor = Employee("Fernanda", "123", "diretor")
-        self.user_repo.add_user(diretor)
-
-        # Criando motorista
-        motorista = Employee("José", "123", "motorista")
-        self.user_repo.add_user(motorista)
-
-        # Criando responsáveis
-        responsavel = Guardian("Ana", "123", aluno2)
-        self.user_repo.add_user(responsavel)
-
-        responsavel2 = Guardian("Orlando", "123", aluno1)
-        self.user_repo.add_user(responsavel2)
-
-        responsavel3 = Guardian("Estefano", "123", aluno3)
-        self.user_repo.add_user(responsavel3)
-
-        responsavel4 = Guardian("Marlene", "123", aluno4)
-        self.user_repo.add_user(responsavel4)
-
-        responsavel5 = Guardian("Otavio", "123", aluno5)
-        self.user_repo.add_user(responsavel5)
+            self._initialized = True
 
     def cadastrar_usuario(
         self,
@@ -319,7 +229,7 @@ class School:
             for eca in student_ecas:
                 print(f"   {eca.name} ({eca.get_schedule()})")
         else:
-            print("   {📭 O aluno não participa de nenhuma atividade extracurricular.")
+            print("    📭 O aluno não participa de nenhuma atividade extracurricular.")
 
     def consultar_turmas(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
@@ -393,3 +303,104 @@ class School:
 
             for _ in range(sclass.n_classes_passed):
                 self.attendance_repo.register_attendance(student, sclass)
+
+    def populate(self):
+        aluno1 = Student("João", "123")
+        self.user_repo.add_user(aluno1)
+
+        aluno2 = Student("Maria", "123")
+        self.user_repo.add_user(aluno2)
+
+        aluno3 = Student("Eduardo", "123")
+        self.user_repo.add_user(aluno3)
+
+        aluno4 = Student("Eduarda", "123")
+        self.user_repo.add_user(aluno4)
+
+        aluno5 = Student("Isabel", "123")
+        self.user_repo.add_user(aluno5)
+
+        # Criando professor e suas turmas
+        prof1 = Employee("Carlos", "123", "professor", "Matemática")
+        self.user_repo.add_user(prof1)
+
+        turma1 = SchoolClass(
+            name="Matemática 1",
+            teacher=prof1,
+            schedule=datetime.time(9, 20),
+            students=[aluno1, aluno2],
+        )
+        self.sclass_repo.create_sclass(turma1)
+        turma2 = SchoolClass(
+            name="Matemática 2",
+            teacher=prof1,
+            schedule=datetime.time(11, 10),
+            students=[aluno3, aluno4],
+        )
+        self.sclass_repo.create_sclass(turma2)
+
+        prova1_turma1 = Exam(turma1, "Prova 1 - Funções", datetime.date(2025, 8, 15))
+        self.exam_repo.create_exam(turma1, prova1_turma1)
+
+        self.exam_repo.register_grade(prova1_turma1, aluno1, 7.5)
+        self.exam_repo.register_grade(prova1_turma1, aluno2, 10.0)
+        prova1_turma1.grades_submitted = True
+
+        prova2_turma1 = Exam(
+            turma1, "Prova 2 - Análise Combinatória", datetime.date(2025, 9, 26)
+        )
+        self.exam_repo.create_exam(turma1, prova2_turma1)
+
+        prova3_turma1 = Exam(
+            turma1, "Prova 3 - Probabilidade", datetime.date(2025, 10, 29)
+        )
+        self.exam_repo.create_exam(turma1, prova3_turma1)
+
+        prova1_turma2 = Exam(turma2, "Prova 1 - Vetores", datetime.date(2025, 10, 3))
+        self.exam_repo.create_exam(turma1, prova1_turma2)
+
+        prof2 = Employee("Luiz", "123", "professor", "Português")
+        self.user_repo.add_user(prof2)
+
+        turma3 = SchoolClass(
+            name="Gramática 1",
+            teacher=prof2,
+            schedule=datetime.time(13, 30),
+            students=[aluno1, aluno2],
+        )
+        self.sclass_repo.create_sclass(turma3)
+
+        prof3 = Employee("Sergio", "123", "professor", "Educação Física")
+        self.user_repo.add_user(prof3)
+
+        eca1 = ECA(
+            name="Natação",
+            teacher=prof3,
+            schedule=datetime.time(7, 30),
+            students=[aluno2, aluno4],
+        )
+        self.eca_repo.create_eca(eca1)
+
+        # Criando diretor
+        diretor = Employee("Fernanda", "123", "diretor")
+        self.user_repo.add_user(diretor)
+
+        # Criando motorista
+        motorista = Employee("José", "123", "motorista")
+        self.user_repo.add_user(motorista)
+
+        # Criando responsáveis
+        responsavel = Guardian("Ana", "123", aluno2)
+        self.user_repo.add_user(responsavel)
+
+        responsavel2 = Guardian("Orlando", "123", aluno1)
+        self.user_repo.add_user(responsavel2)
+
+        responsavel3 = Guardian("Estefano", "123", aluno3)
+        self.user_repo.add_user(responsavel3)
+
+        responsavel4 = Guardian("Marlene", "123", aluno4)
+        self.user_repo.add_user(responsavel4)
+
+        responsavel5 = Guardian("Otavio", "123", aluno5)
+        self.user_repo.add_user(responsavel5)

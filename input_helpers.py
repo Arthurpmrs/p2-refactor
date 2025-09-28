@@ -43,7 +43,8 @@ def input_eca(teacher: Employee) -> ECA:
     return eca
 
 
-def add_student_to_class(sclass: SchoolClass, school: School) -> list[Student]:
+def add_student_to_class(sclass: SchoolClass) -> list[Student]:
+    school = School()
     print("--- Adicionar Alunos a uma Turma ---")
 
     students = school.get_alunos()
@@ -79,7 +80,8 @@ def add_student_to_class(sclass: SchoolClass, school: School) -> list[Student]:
     return selected_students
 
 
-def add_student_to_eca(eca: ECA, school: School) -> list[Student]:
+def add_student_to_eca(eca: ECA) -> list[Student]:
+    school = School()
     print("--- Adicionar Alunos a uma Turma ---")
 
     students = school.get_alunos()
@@ -117,7 +119,8 @@ def add_student_to_eca(eca: ECA, school: School) -> list[Student]:
     return selected_students
 
 
-def visualizar_turma(sclass: SchoolClass, school: School):
+def visualizar_turma(sclass: SchoolClass):
+    school = School()
     print("--- Informações da Turma ---")
     print(f"Nome: {sclass.name}")
     print(f"ID: {sclass.id}")
@@ -149,7 +152,9 @@ def visualizar_turma(sclass: SchoolClass, school: School):
         print("Nenhuma prova cadastrada.")
 
 
-def register_student_and_guardian(school: School):
+def register_student_and_guardian():
+    school = School()
+
     print("--- Cadastro de Aluno ---")
     nome_aluno = input("Nome do aluno: ").strip()
     senha_aluno = input("Senha do aluno: ").strip()
