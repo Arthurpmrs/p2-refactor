@@ -1,12 +1,18 @@
-# from prompts import add_student_to_class, input_school_class, visualizar_turma
-from system import Employee, Guardian, PaymentMethod, Student
+from system import Employee, Exam, Guardian, PaymentMethod, Resource, Student
 from service import School
-from utils import select_item
+from utils import (
+    read_date,
+    select_item,
+)
+from input_helpers import (
+    add_student_to_class,
+    add_student_to_eca,
+    input_eca,
+    input_school_class,
+    visualizar_turma,
+)
 
 
-# ========================
-# Menus
-# ========================
 def menu_aluno(school: School, student: Student):
     print(f"\n🎓 Bem-vindo(a), {student.name}!")
     while True:
@@ -38,134 +44,153 @@ def menu_aluno(school: School, student: Student):
 
 
 def menu_funcionario(school: School, employee: Employee):
-    return
-    print(f"\n👨‍🏫 Bem-vindo(a), {funcionario.nome} ({funcionario.cargo})!")
+    print(f"\n👨‍🏫 Bem-vindo(a), {employee.name} ({employee.position})!")
+
     while True:
         print("\n--- Menu do Funcionário ---")
 
-        if funcionario.cargo in ["professor", "diretor"]:
+        if employee.position in {"professor", "diretor"}:
             # professor e diretor têm todas as opções
-            print(" 1. Registrar presença do aluno")
-            print(" 2. Lançar nota do aluno")
-            print(" 3. Distribuir material")
-            print(" 4. Gerenciar turmas")
-            print(" 5. Agendar prova")
-            print(" 6. Registrar atividade extracurricular")
-            print(" 7. Remover aluno")
-            print(" 8. Consultar alunos matriculados")
-            print(" 9. Rastrear transporte escolar")
-            print("10. Adicioanr alunos a turmas")
-            print("11. Visualizar turma")
-            print("0. Sair")
+            print(" 1. Registrar presença")
+            print(" 2. Lançar nota")
+            print(" 3. Disponibilizar material para a turma")
+            print(" 4. Agendar prova")
+            print(" 5. Consultar alunos matriculados")
+            print(" 6. Visualizar turmas")
+            print(" 7. Criar turma")
+            print(" 8. Adicionar alunos a turmas")
+            print(" 9. Visualizar atividade extracurriculares")
+            print("10. Criar atividade extracurricular")
+            print("11. Adicionar alunos a atividades")
+            print(" 0. Sair")
         else:
             # motoristas e outros cargos: apenas presença e rastreamento
-            print("1. Registrar presença do aluno")
-            print("2. Rastrear transporte escolar")
+            print("1. Registrar presença")
             print("0. Sair")
 
         opcao = input("Escolha uma opção: ")
 
         match opcao:
             case "1":
-                try:
-                    id_aluno = int(input("ID do aluno: "))
-                    escola.registrar_presenca(id_aluno)
-                except ValueError:
-                    print("ID inválido.")
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    sclass.n_classes_passed += 1
+                    print("Registre a presença de cada aluno:")
+                    for student in sclass.students:
+                        while True:
+                            resp = (
+                                input(f"{student.name} presente (s/n)? ")
+                                .strip()
+                                .lower()
+                            )
+                            if resp == "s":
+                                school.registrar_presenca(student, sclass)
+                                break
+                            elif resp == "n":
+                                break
+                            else:
+                                print("    Inválido.")
+
             case "2":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno: "))
-                        nota = float(input("Nota a lançar: "))
-                        disciplina = funcionario.disciplina
-                        escola.lancar_nota(id_aluno, nota, disciplina)
-                    except ValueError:
-                        print("Valor inválido.")
-                else:
-                    try:
-                        id_aluno = int(input("ID do aluno para rastrear transporte: "))
-                        escola.rastrear_transporte(id_aluno)
-                    except ValueError:
-                        print("ID inválido.")
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    school.register_sclass_grades(sclass)
+
             case "3":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno: "))
-                        material = input("Nome do material: ")
-                        disciplina = funcionario.disciplina
-                        escola.distribuir_material(id_aluno, material, disciplina)
-                    except ValueError:
-                        print("Valor inválido.")
-                else:
-                    print("Opção inválida.")
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    name = input("Nome do material: ").strip()
+                    url = input("Link do material: ")
+                    resource = Resource(name, url)
+
+                    school.distribuir_material(resource, sclass)
+
             case "4":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    turma = input_school_class(funcionario)
-                    escola.gerenciar_turmas(turma)
-                else:
-                    print("Opção inválida.")
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    print("Insira informações da prova: ")
+                    name = input("Nome: ").strip()
+                    date = read_date()
+                    school.agendar_prova(sclass, Exam(sclass, name, date))
+
             case "5":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno: "))
-                        nome_prova = input("Nome da prova: ")
-                        data_prova = input("Data da prova (DD/MM/AAAA): ")
-                        disciplina = funcionario.disciplina
-                        escola.agendar_prova(
-                            id_aluno, nome_prova, data_prova, disciplina
-                        )
-                    except ValueError:
-                        print("Valor inválido.")
-                else:
-                    print("Opção inválida.")
+                print("\n👤 Veja todos os alunos matriculados:")
+                for student in school.get_alunos():
+                    print(f"{student.name} (ID: {student.id})")
+
             case "6":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno: "))
-                        atividade = input("Atividade extracurricular: ")
-                        disciplina = funcionario.disciplina
-                        escola.registrar_atividade(id_aluno, atividade, disciplina)
-                    except ValueError:
-                        print("ID inválido.")
-                else:
-                    print("Opção inválida.")
+                print("\n🏫 Ver detalhes de suas turmas:")
+
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    visualizar_turma(sclass, school)
+
             case "7":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno para remoção: "))
-                        escola.remover_aluno(id_aluno)
-                    except ValueError:
-                        print("ID inválido.")
-                else:
-                    print("Opção inválida.")
+                sclass = input_school_class(employee)
+                school.criar_turma(sclass)
+
             case "8":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    alunos = escola.consultar_alunos_matriculados()
-                    if isinstance(alunos, str):
-                        print(alunos)
-                    else:
-                        print("Alunos matriculados:")
-                        for id_aluno, nome in alunos:
-                            print(f"ID: {id_aluno} | Nome: {nome}")
-                else:
-                    print("Opção inválida.")
+                sclass = select_item(
+                    school.get_sclass_from_teacher(employee),
+                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
+                    title="Selecione uma turma",
+                )
+
+                if sclass is not None:
+                    students = add_student_to_class(sclass, school)
+                    school.add_students_to_sclass(sclass, students)
+
             case "9":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    try:
-                        id_aluno = int(input("ID do aluno para rastrear transporte: "))
-                        escola.rastrear_transporte(id_aluno)
-                    except ValueError:
-                        print("ID inválido.")
+                ecas = school.eca_repo.get_ecas(employee.id)
+                if ecas:
+                    print("\n🎯 Ver as atividades extracurriculares que você gerencia:")
+                    for eca in ecas:
+                        print(f"[{eca.id}] {eca.name}")
                 else:
-                    print("Opção inválida.")
+                    print("\nVocê não gerencia nenhuma atividade extracurricular.")
+
             case "10":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    add_student_to_class(funcionario, escola)
+                eca = input_eca(employee)
+                school.criar_atividade_extracurricular(eca)
+
             case "11":
-                if funcionario.cargo in ["professor", "diretor"]:
-                    visualizar_turma(funcionario, escola)
+                eca = select_item(
+                    school.eca_repo.get_ecas(employee.id),
+                    display_fn=lambda e: f"{e.name} (ID: {e.id})",
+                    title="Selecione uma atividade extracurricular",
+                )
+                if eca:
+                    students = add_student_to_eca(eca, school)
+                    for student in students:
+                        eca.students.append(student)
             case "0":
                 break
+
             case _:
                 print("Opção inválida.")
 

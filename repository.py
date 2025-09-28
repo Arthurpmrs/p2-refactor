@@ -100,16 +100,29 @@ class ExamRepository:
 
         return exam_id
 
-    def register_grade(self, exam: Exam, student: Student, grade: float):
+    def register_grade(
+        self, exam: Exam, student: Student, grade: float | None, force: bool = False
+    ):
         exam_result = self.__exam_results.get((exam.id, student.id))
 
         if not exam_result:
-            raise ValueError("Aluno não está cadastrado na prova.")
+            if force:
+                exam_result = StudentExamResult(student=student, exam=exam)
+                self.__exam_results.update({(exam.id, student.id): exam_result})
+            else:
+                raise ValueError("Aluno não está cadastrado na prova.")
 
         exam_result.grade = grade
 
     def get_class_exams(self, sclass_id: int) -> list[Exam]:
         return [exam for exam in self.__exams.values() if exam.sclass.id == sclass_id]
+
+    def get_class_exams_without_grade(self, sclass_id: int) -> list[Exam]:
+        return [
+            exam
+            for exam in self.__exams.values()
+            if exam.sclass.id == sclass_id and not exam.grades_submitted
+        ]
 
     def get_student_exam_results(self, student_id: int) -> list[StudentExamResult]:
         return [

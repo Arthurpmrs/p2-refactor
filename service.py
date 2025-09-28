@@ -17,7 +17,7 @@ from system import (
     Student,
     User,
 )
-from utils import generate_random_hash
+from utils import generate_random_hash, select_item
 
 
 class School:
@@ -44,6 +44,9 @@ class School:
         aluno4 = Student("Eduarda", "123")
         self.user_repo.add_user(aluno4)
 
+        aluno5 = Student("Isabel", "123")
+        self.user_repo.add_user(aluno5)
+
         # Criando professor e suas turmas
         prof1 = Employee("Carlos", "123", "professor", "Matemática")
         self.user_repo.add_user(prof1)
@@ -63,16 +66,22 @@ class School:
         )
         self.sclass_repo.create_sclass(turma2)
 
-        prova1_turma1 = Exam(turma1, "Prova 1 - Funções", datetime.date(2025, 9, 16))
+        prova1_turma1 = Exam(turma1, "Prova 1 - Funções", datetime.date(2025, 8, 15))
         self.exam_repo.create_exam(turma1, prova1_turma1)
 
         self.exam_repo.register_grade(prova1_turma1, aluno1, 7.5)
         self.exam_repo.register_grade(prova1_turma1, aluno2, 10.0)
+        prova1_turma1.grades_submitted = True
 
         prova2_turma1 = Exam(
-            turma1, "Prova 2 - Análise Combinatória", datetime.date(2025, 10, 29)
+            turma1, "Prova 2 - Análise Combinatória", datetime.date(2025, 9, 26)
         )
         self.exam_repo.create_exam(turma1, prova2_turma1)
+
+        prova3_turma1 = Exam(
+            turma1, "Prova 3 - Probabilidade", datetime.date(2025, 10, 29)
+        )
+        self.exam_repo.create_exam(turma1, prova3_turma1)
 
         prova1_turma2 = Exam(turma2, "Prova 1 - Vetores", datetime.date(2025, 10, 3))
         self.exam_repo.create_exam(turma1, prova1_turma2)
@@ -119,6 +128,9 @@ class School:
 
         responsavel4 = Guardian("Marlene", "123", aluno4)
         self.user_repo.add_user(responsavel4)
+
+        responsavel5 = Guardian("Otavio", "123", aluno5)
+        self.user_repo.add_user(responsavel5)
 
     def cadastrar_usuario(
         self,
@@ -336,9 +348,48 @@ class School:
         )
         print(f"🔗 www.transport.school.com.br/{student.id}/{generate_random_hash()}")
 
-    def gerenciar_turmas(self, sclass: SchoolClass):
+    def criar_turma(self, sclass: SchoolClass):
         self.sclass_repo.create_sclass(sclass)
         print(f"🧑‍🏫 Turma '{sclass.name}' criada no horário {sclass.get_schedule()}")
 
     def get_alunos(self) -> list[Student]:
         return self.user_repo.get_students()
+
+    def get_sclass_from_teacher(self, teacher: Employee):
+        return self.sclass_repo.get_teacher_sclasses(teacher.id)
+
+    def register_sclass_grades(self, sclass: SchoolClass):
+        exam = select_item(
+            self.exam_repo.get_class_exams_without_grade(sclass.id),
+            display_fn=lambda e: f"{e.name} (DATA: {e.date})",
+            title="Selecione uma prova da turma",
+        )
+
+        if exam:
+            exam.grades_submitted = True
+            print(f"Registre a nota dos alunos na prova {exam.name}:")
+            for student in sclass.students:
+                while True:
+                    resp = input(f"Nota de {student.name}? ").strip().lower()
+                    try:
+                        grade = float(resp)
+                        self.lancar_nota(exam, student, grade)
+                        break
+                    except Exception:
+                        print("    Inválido.")
+
+    def add_students_to_sclass(self, sclass: SchoolClass, students: list[Student]):
+        for student in students:
+            sclass.students.append(student)
+
+            # Cria provas para novo aluno
+            for exam in self.exam_repo.get_class_exams(sclass.id):
+                if exam.grades_submitted:
+                    grade = 10.0
+                else:
+                    grade = None
+
+                self.exam_repo.register_grade(exam, student, grade, force=True)
+
+            for _ in range(sclass.n_classes_passed):
+                self.attendance_repo.register_attendance(student, sclass)

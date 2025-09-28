@@ -87,6 +87,7 @@ class Exam:
     sclass: SchoolClass
     name: str
     date: datetime.date
+    grades_submitted: bool = False
 
 
 @dataclass

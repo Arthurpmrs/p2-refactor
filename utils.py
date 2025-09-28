@@ -1,3 +1,4 @@
+import datetime
 import random
 import string
 from typing import Callable, TypeVar
@@ -45,3 +46,27 @@ def select_item(
                 print("Opção inválida, tente novamente.")
         except ValueError:
             print("Entrada inválida, digite um número.")
+
+
+def read_date() -> datetime.date:
+    while True:
+        date_str = input("Digite a data (YYYY-MM-DD): ")
+
+        try:
+            combined_str = f"{date_str}"
+            scheduled_datetime = datetime.datetime.strptime(
+                combined_str, "%Y-%m-%d"
+            ).date()
+            return scheduled_datetime
+        except ValueError:
+            print("Formato de data inválido. Tente novamente.\n")
+
+
+def read_time() -> datetime.time:
+    while True:
+        time_str = input("Horário da turma (HH:MM): ").strip()
+        try:
+            hour, minute = map(int, time_str.split(":"))
+            return datetime.time(hour, minute)
+        except Exception:
+            print("Formato inválido. Use HH:MM, por exemplo 14:30.\n")
