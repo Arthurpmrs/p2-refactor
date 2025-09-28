@@ -201,9 +201,9 @@ class School:
 
     def consultar_dados_aluno(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
-        print(f"\n📋 Dados do(a) aluno(a) {student.name}:")
+        print(f"📋 Dados do(a) aluno(a) {student.name}:")
         if not student_sclasses:
-            print("    📭 O(A) aluno(a) não foi cadastrado(a) em uma turma.")
+            print("\n📭 O(A) aluno(a) não foi cadastrado(a) em uma turma.")
 
         for sclass in student_sclasses:
             print(f"\n🏫 Turma {sclass.name} ({sclass.get_schedule()})")
@@ -244,14 +244,12 @@ class School:
                 print("        📭 Nenhuma presença registrada para essa turma.")
 
         student_ecas = self.eca_repo.get_student_ecas(student.id)
-        print("\n    🎯 Atividades extracurriculares:")
+        print("\n🎯 Atividades extracurriculares:")
         if student_ecas:
             for eca in student_ecas:
                 print(f"   {eca.name} ({eca.get_schedule()})")
         else:
-            print(
-                "        📭 O aluno não participa de nenhuma atividade extracurricular."
-            )
+            print("    📭 O aluno não participa de nenhuma atividade extracurricular.")
 
     def consultar_materiais(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
@@ -333,14 +331,14 @@ class School:
     def processar_pagamento(self, student: Student, method: PaymentMethod):
         if method == PaymentMethod.BOLETO:
             print(
-                f"✅ Boleto gerado para {student.name}. Clique no link abaixo para visualizar:"
+                f"\n✅ Boleto gerado para {student.name}. Clique no link abaixo para visualizar:"
             )
             print(
                 f"🔗 www.payment.school.com.br/{student.id}/pdf/{generate_random_hash()}"
             )
         else:
             print(
-                f"⏳ Clique no link abaixo para concluir o pagamento da mensalidade de {student.name}."
+                f"\n⏳ Clique no link abaixo para concluir o pagamento da mensalidade de {student.name}."
             )
             print(f"🔗 www.payment.school.com.br/{student.id}/{generate_random_hash()}")
 

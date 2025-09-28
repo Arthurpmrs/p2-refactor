@@ -5,7 +5,7 @@ from utils import read_time
 
 
 def input_school_class(teacher: Employee) -> SchoolClass:
-    print("\n--- Cadastro de Turma ---")
+    print("--- Cadastro de Turma ---")
 
     name = input("Nome da turma: ").strip()
     schedule = read_time()
@@ -19,7 +19,6 @@ def input_school_class(teacher: Employee) -> SchoolClass:
         except ValueError:
             print("Digite um número inteiro válido e não negativo.")
 
-    # Criar objeto
     sclass = SchoolClass(
         name=name,
         schedule=schedule,
@@ -33,12 +32,11 @@ def input_school_class(teacher: Employee) -> SchoolClass:
 
 
 def input_eca(teacher: Employee) -> ECA:
-    print("\n--- Cadastro de Atividade Extracurricular ---")
+    print("--- Cadastro de Atividade Extracurricular ---")
 
     name = input("Nome da atividade: ").strip()
     schedule = read_time()
 
-    # Criar objeto
     eca = ECA(name=name, schedule=schedule, teacher=teacher)
 
     print(f"\nAtividade {eca.name} criada com sucesso!")
@@ -46,9 +44,8 @@ def input_eca(teacher: Employee) -> ECA:
 
 
 def add_student_to_class(sclass: SchoolClass, school: School) -> list[Student]:
-    print("\n--- Adicionar Alunos a uma Turma ---")
+    print("--- Adicionar Alunos a uma Turma ---")
 
-    # 3. Listar alunos disponíveis
     students = school.get_alunos()
     sclass_student_ids = [s.id for s in sclass.students]
     students_not_in_class = [
@@ -63,7 +60,6 @@ def add_student_to_class(sclass: SchoolClass, school: School) -> list[Student]:
     for i, student in enumerate(students_not_in_class, start=1):
         print(f"{i}. {student.name} (ID: {student.id})")
 
-    # 4. Selecionar múltiplos alunos
     print("Digite os números dos alunos separados por vírgula (ex: 1,3,5):")
     while True:
         entrada = input("Seleção: ").strip()
@@ -84,9 +80,8 @@ def add_student_to_class(sclass: SchoolClass, school: School) -> list[Student]:
 
 
 def add_student_to_eca(eca: ECA, school: School) -> list[Student]:
-    print("\n--- Adicionar Alunos a uma Turma ---")
+    print("--- Adicionar Alunos a uma Turma ---")
 
-    # 3. Listar alunos disponíveis
     students = school.get_alunos()
     eca_student_ids = [s.id for s in eca.students]
     students_not_in_eca = [
@@ -101,7 +96,6 @@ def add_student_to_eca(eca: ECA, school: School) -> list[Student]:
     for i, student in enumerate(students_not_in_eca, start=1):
         print(f"{i}. {student.name} (ID: {student.id})")
 
-    # 4. Selecionar múltiplos alunos
     print("Digite os números dos alunos separados por vírgula (ex: 1,3,5):")
     while True:
         entrada = input("Seleção: ").strip()
@@ -124,19 +118,13 @@ def add_student_to_eca(eca: ECA, school: School) -> list[Student]:
 
 
 def visualizar_turma(sclass: SchoolClass, school: School):
-    """
-    Permite selecionar uma turma de um professor e visualizar suas informações básicas.
-    """
-
-    # 3. Mostrar informações básicas
-    print("\n--- Informações da Turma ---")
+    print("--- Informações da Turma ---")
     print(f"Nome: {sclass.name}")
     print(f"ID: {sclass.id}")
     print(f"Horário: {sclass.schedule.strftime('%H:%M')}")
     print(f"Aulas totais: {sclass.n_classes_total}")
     print(f"Aulas dadas: {sclass.n_classes_passed}")
 
-    # Alunos
     print("\nAlunos matriculados:")
     if sclass.students:
         for student in sclass.students:
@@ -144,7 +132,6 @@ def visualizar_turma(sclass: SchoolClass, school: School):
     else:
         print("Nenhum aluno matriculado.")
 
-    # Provas
     print("\nProvas:")
     exams = school.exam_repo.get_class_exams(sclass.id)
     if exams:
@@ -163,7 +150,7 @@ def visualizar_turma(sclass: SchoolClass, school: School):
 
 
 def register_student_and_guardian(school: School):
-    print("\n--- Cadastro de Aluno ---")
+    print("--- Cadastro de Aluno ---")
     nome_aluno = input("Nome do aluno: ").strip()
     senha_aluno = input("Senha do aluno: ").strip()
 

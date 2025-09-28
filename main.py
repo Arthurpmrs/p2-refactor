@@ -1,3 +1,4 @@
+import os
 from system import Employee, Exam, Guardian, PaymentMethod, Resource, Student
 from service import School
 from utils import (
@@ -15,8 +16,10 @@ from input_helpers import (
 
 
 def menu_aluno(school: School, student: Student):
-    print(f"\n🎓 Bem-vindo(a), {student.name}!")
     while True:
+        os.system("clear")
+        print(f"🎓 Bem-vindo(a), {student.name}!")
+
         print("\n--- Menu do Aluno ---")
         print("1. Ver turmas")
         print("2. Ver materiais")
@@ -25,8 +28,8 @@ def menu_aluno(school: School, student: Student):
         print("5. Ver atividades extracurriculares")
         print("0. Sair")
 
-        opcao = input("Escolha uma opção: ")
-
+        opcao = input("\nEscolha uma opção: ")
+        os.system("clear")
         match opcao:
             case "1":
                 school.consultar_turmas(student)
@@ -43,13 +46,15 @@ def menu_aluno(school: School, student: Student):
             case _:
                 print("Opção inválida.")
 
+        input("\nClique Enter para voltar ao menu.")
+
 
 def menu_funcionario(school: School, employee: Employee):
-    print(f"\n👨‍🏫 Bem-vindo(a), {employee.name} ({employee.position})!")
-
     while True:
-        print("\n--- Menu do Funcionário ---")
+        os.system("clear")
+        print(f"👨‍🏫 Bem-vindo(a), {employee.name} ({employee.position})!")
 
+        print("\n--- Menu do Funcionário ---")
         if employee.position in {"professor", "diretor"}:
             # professor e diretor têm todas as opções
             print(" 1. Registrar presença")
@@ -70,8 +75,8 @@ def menu_funcionario(school: School, employee: Employee):
             print("1. Registrar presença")
             print("0. Sair")
 
-        opcao = input("Escolha uma opção: ")
-
+        opcao = input("\nEscolha uma opção: ")
+        os.system("clear")
         match opcao:
             case "1":
                 sclass = select_item(
@@ -136,12 +141,12 @@ def menu_funcionario(school: School, employee: Employee):
                     school.agendar_prova(sclass, Exam(sclass, name, date))
 
             case "5":
-                print("\n👤 Veja todos os alunos matriculados:")
+                print("👤 Veja todos os alunos matriculados:")
                 for student in school.get_alunos():
                     print(f"{student.name} (ID: {student.id})")
 
             case "6":
-                print("\n🏫 Ver detalhes de suas turmas:")
+                print("🏫 Ver detalhes de suas turmas:")
 
                 sclass = select_item(
                     school.get_sclass_from_teacher(employee),
@@ -170,11 +175,11 @@ def menu_funcionario(school: School, employee: Employee):
             case "9":
                 ecas = school.eca_repo.get_ecas(employee.id)
                 if ecas:
-                    print("\n🎯 Ver as atividades extracurriculares que você gerencia:")
+                    print("🎯 Ver as atividades extracurriculares que você gerencia:")
                     for eca in ecas:
                         print(f"[{eca.id}] {eca.name}")
                 else:
-                    print("\nVocê não gerencia nenhuma atividade extracurricular.")
+                    print("Você não gerencia nenhuma atividade extracurricular.")
 
             case "10":
                 eca = input_eca(employee)
@@ -200,18 +205,22 @@ def menu_funcionario(school: School, employee: Employee):
             case _:
                 print("Opção inválida.")
 
+        input("\nClique Enter para voltar ao menu.")
+
 
 def menu_responsavel(school: School, guardian: Guardian):
-    print(f"\n👪 Bem-vindo, {guardian.name}!")
-
     while True:
+        os.system("clear")
+        print(f"👪 Bem-vindo, {guardian.name}!")
+
         print("\n--- Menu do Responsável ---")
         print("1. Consultar dados do aluno")
         print("2. Pagar mensalidade")
         print("3. Rastrear transporte escolar")
         print("0. Sair")
-        opcao = input("Escolha uma opção: ")
 
+        opcao = input("\nEscolha uma opção: ")
+        os.system("clear")
         match opcao:
             case "1":
                 school.consultar_dados_aluno(guardian.student)
@@ -230,24 +239,28 @@ def menu_responsavel(school: School, guardian: Guardian):
             case _:
                 print("Opção inválida.")
 
+        input("\nClique Enter para voltar ao menu.")
+
 
 def main():
     escola = School()
-    print("\n=== 🎓 Sistema de Gestão Escolar ===")
 
     while True:
+        os.system("clear")
+        print("=== 🎓 Sistema de Gestão Escolar ===")
         print("\n1 - Login")
         # print("2 - Cadastrar usuário")
         print("0 - Sair")
-        opcao = input("Escolha uma opção: ")
+        opcao = input("\nEscolha uma opção: ")
 
         # ---------------- LOGIN ----------------
         if opcao == "1":
-            print("\nSelecione o tipo de usuário:")
+            os.system("clear")
+            print("Selecione o tipo de usuário:")
             print("1 - Aluno")
             print("2 - Funcionário")
             print("3 - Responsável")
-            tipo_opcao = input("Escolha uma opção: ")
+            tipo_opcao = input("\nEscolha uma opção: ")
 
             match tipo_opcao:
                 case "1":
@@ -258,13 +271,16 @@ def main():
                     tipo = "responsavel"
                 case _:
                     print("❌ Opção inválida.")
+                    input("Clique Enter para voltar ao menu.")
                     continue
 
+            print(" ")
             nome = input("Nome: ")
             senha = input("Senha: ")
             usuario = escola.login(nome, senha, tipo)
 
             if usuario is None:
+                input("Clique Enter para tentar novamente.")
                 continue
 
             print(f"\n✅ Login realizado como {usuario.show_type()}.")
@@ -282,7 +298,7 @@ def main():
             print("1 - Aluno")
             print("2 - Funcionário")
             print("3 - Responsável")
-            tipo_opcao = input("Escolha uma opção: ")
+            tipo_opcao = input("\nEscolha uma opção: ")
 
             match tipo_opcao:
                 case "1":
@@ -304,7 +320,7 @@ def main():
                 print("2 - Professor")
                 print("3 - Motorista")
                 print("4 - Outro")
-                cargo_opcao = input("Escolha uma opção: ")
+                cargo_opcao = input("\nEscolha uma opção: ")
 
                 match cargo_opcao:
                     case "1":
