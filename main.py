@@ -1,268 +1,45 @@
 import os
-from system import Employee, Exam, Guardian, PaymentMethod, Resource, Student
+
 from service import School
-from utils import read_date, select_item
-from input_helpers import (
-    add_student_to_class,
-    add_student_to_eca,
-    input_eca,
-    input_school_class,
-    register_users,
-    visualizar_turma,
-)
+from system import Employee, Guardian, Student
+from menu import UserMenuContext
+from menu.employee_menu import EmployeeMenuStrategy
+from menu.guardian_menu import GuardianMenuStrategy
+from menu.student_menu import StudentMenuStrategy
 
 
-def menu_aluno(student: Student):
-    school = School()
+class App:
+    school: School
+    context: UserMenuContext
 
-    while True:
-        os.system("clear")
-        print(f"🎓 Bem-vindo(a), {student.name}!")
+    def __init__(self):
+        self.school = School()
+        self.context = UserMenuContext()
 
-        print("\n--- Menu do Aluno ---")
-        print("1. Ver turmas")
-        print("2. Ver materiais")
-        print("3. Ver provas e notas")
-        print("4. Ver presenças")
-        print("5. Ver atividades extracurriculares")
-        print("0. Sair")
+    def start(self):
+        while True:
+            os.system("clear")
+            print("=== 🎓 Sistema de Gestão Escolar ===\n")
+            print("1 - Login")
+            print("0 - Sair")
+            opcao = input("\nEscolha uma opção: ")
 
-        opcao = input("\nEscolha uma opção: ")
-        os.system("clear")
-        match opcao:
-            case "1":
-                school.consultar_turmas(student)
-            case "2":
-                school.consultar_materiais(student)
-            case "3":
-                school.consultar_notas_e_provas(student)
-            case "4":
-                school.consultar_presencas(student)
-            case "5":
-                school.consultar_ecas(student)
-            case "0":
+            if opcao == "1":
+                self.show_login_menu()
+            elif opcao == "0":
+                print("Saindo do sistema...")
                 break
-            case _:
-                print("Opção inválida.")
+            else:
+                print("Opção inválida. Tente novamente.")
 
-        input("\nClique Enter para voltar ao menu.")
-
-
-def menu_funcionario(employee: Employee):
-    school = School()
-
-    while True:
-        os.system("clear")
-        print(f"👨‍🏫 Bem-vindo(a), {employee.name} ({employee.position})!")
-
-        print("\n--- Menu do Funcionário ---")
-        if employee.position in {"professor", "diretor"}:
-            # professor e diretor têm todas as opções
-            print(" 1. Registrar presença")
-            print(" 2. Lançar nota")
-            print(" 3. Disponibilizar material para a turma")
-            print(" 4. Agendar prova")
-            print(" 5. Consultar alunos matriculados")
-            print(" 6. Visualizar turmas")
-            print(" 7. Criar turma")
-            print(" 8. Adicionar alunos a turmas")
-            print(" 9. Visualizar atividade extracurriculares")
-            print("10. Criar atividade extracurricular")
-            print("11. Adicionar alunos a atividades")
-            print("12. Cadastrar usuários")
-            print(" 0. Sair")
-        else:
-            # motoristas e outros cargos: apenas presença e rastreamento
-            print("1. Registrar presença")
-            print("0. Sair")
-
-        opcao = input("\nEscolha uma opção: ")
-        os.system("clear")
-        match opcao:
-            case "1":
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    sclass.n_classes_passed += 1
-                    print("Registre a presença de cada aluno:")
-                    for student in sclass.students:
-                        while True:
-                            resp = (
-                                input(f"{student.name} presente (s/n)? ")
-                                .strip()
-                                .lower()
-                            )
-                            if resp == "s":
-                                school.registrar_presenca(student, sclass)
-                                break
-                            elif resp == "n":
-                                break
-                            else:
-                                print("    Inválido.")
-
-            case "2":
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    school.register_sclass_grades(sclass)
-
-            case "3":
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    name = input("Nome do material: ").strip()
-                    url = input("Link do material: ")
-                    resource = Resource(name, url)
-
-                    school.distribuir_material(resource, sclass)
-
-            case "4":
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    print("Insira informações da prova: ")
-                    name = input("Nome: ").strip()
-                    date = read_date()
-                    school.agendar_prova(sclass, Exam(sclass, name, date))
-
-            case "5":
-                print("👤 Veja todos os alunos matriculados:")
-                for student in school.get_alunos():
-                    print(f"{student.name} (ID: {student.id})")
-
-            case "6":
-                print("🏫 Ver detalhes de suas turmas:")
-
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    visualizar_turma(sclass)
-
-            case "7":
-                sclass = input_school_class(employee)
-                school.criar_turma(sclass)
-
-            case "8":
-                sclass = select_item(
-                    school.get_sclass_from_teacher(employee),
-                    display_fn=lambda c: f"{c.name} (ID: {c.id})",
-                    title="Selecione uma turma",
-                )
-
-                if sclass is not None:
-                    students = add_student_to_class(sclass)
-                    school.add_students_to_sclass(sclass, students)
-
-            case "9":
-                ecas = school.eca_repo.get_ecas(employee.id)
-                if ecas:
-                    print("🎯 Ver as atividades extracurriculares que você gerencia:")
-                    for eca in ecas:
-                        print(f"[{eca.id}] {eca.name}")
-                else:
-                    print("Você não gerencia nenhuma atividade extracurricular.")
-
-            case "10":
-                eca = input_eca(employee)
-                school.criar_atividade_extracurricular(eca)
-
-            case "11":
-                eca = select_item(
-                    school.eca_repo.get_ecas(employee.id),
-                    display_fn=lambda e: f"{e.name} (ID: {e.id})",
-                    title="Selecione uma atividade extracurricular",
-                )
-                if eca:
-                    students = add_student_to_eca(eca)
-                    for student in students:
-                        eca.students.append(student)
-
-            case "12":
-                register_users()
-
-            case "0":
-                break
-
-            case _:
-                print("Opção inválida.")
-
-        input("\nClique Enter para voltar ao menu.")
-
-
-def menu_responsavel(guardian: Guardian):
-    school = School()
-
-    while True:
-        os.system("clear")
-        print(f"👪 Bem-vindo, {guardian.name}!")
-
-        print("\n--- Menu do Responsável ---")
-        print("1. Consultar dados do aluno")
-        print("2. Pagar mensalidade")
-        print("3. Rastrear transporte escolar")
-        print("0. Sair")
-
-        opcao = input("\nEscolha uma opção: ")
-        os.system("clear")
-        match opcao:
-            case "1":
-                school.consultar_dados_aluno(guardian.student)
-            case "2":
-                print("💳 Formas de pagamento: PIX | Cartão | Boleto")
-                forma_pagamento = input("Digite a forma de pagamento: ")
-                try:
-                    payment_method = PaymentMethod[forma_pagamento.upper()]
-                    school.processar_pagamento(guardian.student, payment_method)
-                except Exception:
-                    print("Opção inválida.")
-            case "3":
-                school.rastrear_transporte(guardian.student)
-            case "0":
-                break
-            case _:
-                print("Opção inválida.")
-
-        input("\nClique Enter para voltar ao menu.")
-
-
-def main():
-    escola = School()
-
-    while True:
-        os.system("clear")
-        print("=== 🎓 Sistema de Gestão Escolar ===")
-        print("\n1 - Login")
-        # print("2 - Cadastrar usuário")
-        print("0 - Sair")
-        opcao = input("\nEscolha uma opção: ")
-
-        # ---------------- LOGIN ----------------
-        if opcao == "1":
+    def show_login_menu(self):
+        while True:
             os.system("clear")
             print("Selecione o tipo de usuário:")
             print("1 - Aluno")
             print("2 - Funcionário")
             print("3 - Responsável")
+            print("0 - Voltar")
             tipo_opcao = input("\nEscolha uma opção: ")
 
             match tipo_opcao:
@@ -280,7 +57,7 @@ def main():
             print(" ")
             nome = input("Nome: ")
             senha = input("Senha: ")
-            usuario = escola.login(nome, senha, tipo)
+            usuario = self.school.login(nome, senha, tipo)
 
             if usuario is None:
                 input("Clique Enter para tentar novamente.")
@@ -289,21 +66,23 @@ def main():
             print(f"\n✅ Login realizado como {usuario.get_type()}.")
 
             if isinstance(usuario, Student):
-                menu_aluno(usuario)
+                strategy = StudentMenuStrategy(usuario)
             elif isinstance(usuario, Employee):
-                menu_funcionario(usuario)
+                strategy = EmployeeMenuStrategy(usuario)
             elif isinstance(usuario, Guardian):
-                menu_responsavel(usuario)
+                strategy = GuardianMenuStrategy(usuario)
+            else:
+                raise ValueError("User is not one of the known subclasses.")
 
-        elif opcao == "0":
-            print("Saindo do sistema...")
+            self.context.set_strategy(strategy)
+            self.context.show_menu()
+
             break
-        else:
-            print("Opção inválida. Tente novamente.")
 
 
 if __name__ == "__main__":
     try:
-        main()
+        app = App()
+        app.start()
     except KeyboardInterrupt:
         print("\n\nSistema encerrado pelo usuário.")
