@@ -41,6 +41,11 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 ---
 
 ## Padrões de Projeto implementados
+### Criacionais
 - **Singleton**: A classe `School` concentra a gestão dos dados da instituição (possui as instâncias dos repositórios). Ao invés de passar a instância como argumento para várias partes do código, foi usado o padrão Singleton. Assim, basta instanciar a classe onde ela é necessária e teremos os mesmos dados. Tudo fica centralizado em uma única instância.
 - **Builder**: A classe `SchoolClass` é um dos pontos chaves da aplicação. Como ela tem vários atributos, alguns opcionais para certas ocasições, o padrão builder é bem adequado.
 - **Factory Method**: Foi criada uma estrutura baseada em Factory Method para criação dos diferentes tipos de usuário, levando em consideração suas peculiaridades. A classe `Registrator` funciona como `Creator`.
+
+### Comportamentais
+- **Strategy**: Implementado para tratar de forma mais genérica de extensível os menus dos diferentes tipos de usuário da aplicação.
+- **Template Method**: A funcionalidade de menu é muito parecida em todas as suas versões. Template Method foi usado para criar um esqueleto geral deixando que a classe concreta substitua só duas partes: a listagem de opções do menu e o match da opção selecionada com o código correto da funcionalidade.
