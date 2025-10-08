@@ -49,3 +49,4 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 ### Comportamentais
 - **Strategy**: Implementado para tratar de forma mais genérica de extensível os menus dos diferentes tipos de usuário da aplicação.
 - **Template Method**: A funcionalidade de menu é muito parecida em todas as suas versões. Template Method foi usado para criar um esqueleto geral deixando que a classe concreta substitua só duas partes: a listagem de opções do menu e o match da opção selecionada com o código correto da funcionalidade.
+- **Command**: Implementado para abstrair a lógica de login e seleção do Strategy correto para cada usuário. Teve como resultado positivo a simplificação do método do menu de login.

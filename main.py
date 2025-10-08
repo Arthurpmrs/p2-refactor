@@ -1,11 +1,12 @@
 import os
 
+from commands import (
+    LoginAsEmpoloyeeCommand,
+    LoginAsGuardianCommand,
+    LoginAsStudentCommand,
+)
 from service import School
-from system import Employee, Guardian, Student
 from menu import UserMenuContext
-from menu.employee_menu import EmployeeMenuStrategy
-from menu.guardian_menu import GuardianMenuStrategy
-from menu.student_menu import StudentMenuStrategy
 
 
 class App:
@@ -40,41 +41,21 @@ class App:
             print("2 - Funcionário")
             print("3 - Responsável")
             print("0 - Voltar")
-            tipo_opcao = input("\nEscolha uma opção: ")
+            option = input("\nEscolha uma opção: ")
 
-            match tipo_opcao:
+            match option:
                 case "1":
-                    tipo = "aluno"
+                    command = LoginAsStudentCommand(self.context)
                 case "2":
-                    tipo = "funcionario"
+                    command = LoginAsEmpoloyeeCommand(self.context)
                 case "3":
-                    tipo = "responsavel"
+                    command = LoginAsGuardianCommand(self.context)
                 case _:
                     print("❌ Opção inválida.")
                     input("Clique Enter para voltar ao menu.")
                     continue
 
-            print(" ")
-            nome = input("Nome: ")
-            senha = input("Senha: ")
-            usuario = self.school.login(nome, senha, tipo)
-
-            if usuario is None:
-                input("Clique Enter para tentar novamente.")
-                continue
-
-            print(f"\n✅ Login realizado como {usuario.get_type()}.")
-
-            if isinstance(usuario, Student):
-                strategy = StudentMenuStrategy(usuario)
-            elif isinstance(usuario, Employee):
-                strategy = EmployeeMenuStrategy(usuario)
-            elif isinstance(usuario, Guardian):
-                strategy = GuardianMenuStrategy(usuario)
-            else:
-                raise ValueError("User is not one of the known subclasses.")
-
-            self.context.set_strategy(strategy)
+            command.execute()
             self.context.show_menu()
 
             break

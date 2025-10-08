@@ -47,7 +47,7 @@ class School:
         idx = self.user_repo.add_user(user)
         print(f"{user.get_type()} cadastrado (ID {idx})")
 
-    def login(self, nome: str, senha: str, tipo: str) -> User | None:
+    def login(self, nome: str, senha: str) -> User | None:
         try:
             return self.user_repo.validate_user(nome, senha)
         except ValueError:
