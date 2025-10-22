@@ -52,4 +52,6 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 - **Command**: Implementado para abstrair a lógica de login e seleção do Strategy correto para cada usuário. Teve como resultado positivo a simplificação do método do menu de login.
 
 ### Estruturais
-- **Decorator**: Implementado para adicionar registro de navegação dos usuários nos menus. Assim, são registrar padrões de uso que podem ser estudadados para entender melhor os clientes. Os dados são salvos num arquivo `app.log`.
+- **Decorator**: Implementado para adicionar registro de navegação dos usuários nos menus da aplicação. Assim, são registrar padrões de uso que podem ser estudadados para entender melhor os clientes. Os dados são salvos num arquivo `app.log`.
+- **Proxy**: Foi utilizado como uma camada de Cache para um serviço externo de upload/download de recursos das aulas (_mock_), seguindo a mesma interface desse serviço. Essa classe verifica no cache interno a disponibilidade de arquivos para download, antes de fazer uma chamada para o serviço externo.
+- **Adapter**: Implementado para conectar o serviço de upload com a aplicação. O serviço de upload/download retorna bytes. Entretanto, a aplicação lida com o input de paths de arquivos para o upload e salvamento de arquivos numa pasta específica para download.

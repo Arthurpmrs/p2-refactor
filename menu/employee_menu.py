@@ -93,12 +93,14 @@ class EmployeeMenuStrategy(UserMenuStrategy):
 
                 if sclass is not None:
                     name = input("Nome do material: ").strip()
-                    url = input("Link do material: ")
+                    str_path = input("Path do material: ").strip()
+                    url = self.school.resource_adapter.upload_from_path(str_path)
+
                     resource = Resource(name, url)
 
                     self.school.distribuir_material(resource, sclass)
 
-                return False
+                return True
 
             case "4":
                 sclass = select_item(
@@ -134,7 +136,7 @@ class EmployeeMenuStrategy(UserMenuStrategy):
                 if sclass is not None:
                     visualizar_turma(sclass)
 
-                return False
+                return True
 
             case "7":
                 sclass = input_school_class(self.employee)

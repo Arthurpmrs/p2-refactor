@@ -7,6 +7,11 @@ from repository import (
     SchoolClassRepository,
     UserRepository,
 )
+from resource_service import (
+    CachedResourceProxy,
+    MockResourceService,
+    ResourceToFileAdapter,
+)
 from system import (
     ECA,
     Employee,
@@ -38,6 +43,9 @@ class School:
             self.attendance_repo = AttendanceRepository()
             self.exam_repo = ExamRepository()
             self.eca_repo = ECARepository()
+            self.resource_adapter = ResourceToFileAdapter(
+                service=CachedResourceProxy(upstream=MockResourceService())
+            )
 
             self.populate()
 
@@ -138,14 +146,33 @@ class School:
         print("📚 Materiais:")
         if not student_sclasses:
             print("    📭 O(A) não foi cadastrado(a) em uma turma.")
+            return
 
+        items: list[tuple[SchoolClass, Resource]] = []
         for sclass in student_sclasses:
-            print(f"🏫 Turma {sclass.name} ({sclass.get_schedule()})")
             if sclass.resources:
                 for resource in sclass.resources:
-                    print(f"    {resource.name} ({resource.url})")
-            else:
-                print("    📭 Nenhum material disponível.")
+                    items.append((sclass, resource))
+
+        if not items:
+            print("    📭 Nenhum material disponível.")
+            return
+
+        choice = select_item(
+            items,
+            display_fn=lambda pair: f"{pair[0].name} - {pair[1].name}",
+            title="Selecione um material para baixar",
+        )
+
+        if not choice:
+            return
+
+        _, selected_resource = choice
+        try:
+            local_path = self.resource_adapter.download_to_folder(selected_resource.url)
+            print(f"✅ Material '{selected_resource.name}' salvo em: {local_path}")
+        except Exception as e:
+            print(f"❌ Erro ao baixar '{selected_resource.name}': {e}")
 
     def consultar_notas_e_provas(self, student: Student):
         student_sclasses = self.sclass_repo.get_student_sclasses(student.id)
