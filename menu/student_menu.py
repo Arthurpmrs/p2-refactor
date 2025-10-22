@@ -6,9 +6,14 @@ class StudentMenuStrategy(UserMenuStrategy):
     student: Student
 
     def __init__(self, student: Student):
-        super().__init__()
         self.student = student
+        super().__init__()
+
+    def set_menu_title(self):
         self.menu_title = f"🎓 Bem-vindo(a), {self.student.name}!"
+
+    def set_logged_user(self):
+        self.logged_user = self.student
 
     def show_menu_options(self):
         print("\n--- Menu do Aluno ---")

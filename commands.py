@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from menu.decorator import LogMenuDectorator
 from service import School
 from system import Employee, Guardian, Student, User
 from menu import UserMenuContext, UserMenuStrategy
@@ -41,7 +42,7 @@ class LoginAsStudentCommand(LoginCommand):
         if not self.user or not isinstance(self.user, Student):
             raise ValueError("User of wrong type")
 
-        return StudentMenuStrategy(self.user)
+        return LogMenuDectorator(StudentMenuStrategy(self.user))
 
 
 class LoginAsEmpoloyeeCommand(LoginCommand):
@@ -49,7 +50,7 @@ class LoginAsEmpoloyeeCommand(LoginCommand):
         if not self.user or not isinstance(self.user, Employee):
             raise ValueError("User of wrong type")
 
-        return EmployeeMenuStrategy(self.user)
+        return LogMenuDectorator(EmployeeMenuStrategy(self.user))
 
 
 class LoginAsGuardianCommand(LoginCommand):
@@ -57,4 +58,4 @@ class LoginAsGuardianCommand(LoginCommand):
         if not self.user or not isinstance(self.user, Guardian):
             raise ValueError("User of wrong type")
 
-        return GuardianMenuStrategy(self.user)
+        return LogMenuDectorator(GuardianMenuStrategy(self.user))

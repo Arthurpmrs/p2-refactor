@@ -6,9 +6,14 @@ class GuardianMenuStrategy(UserMenuStrategy):
     guardian: Guardian
 
     def __init__(self, guardian: Guardian):
-        super().__init__()
         self.guardian = guardian
+        super().__init__()
+
+    def set_menu_title(self):
         self.menu_title = f"👪 Bem-vindo, {self.guardian.name}!"
+
+    def set_logged_user(self):
+        self.logged_user = self.guardian
 
     def show_menu_options(self):
         print("\n--- Menu do Responsável ---")

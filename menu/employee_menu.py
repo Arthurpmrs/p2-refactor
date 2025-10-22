@@ -15,11 +15,16 @@ class EmployeeMenuStrategy(UserMenuStrategy):
     employee: Employee
 
     def __init__(self, employee: Employee):
-        super().__init__()
         self.employee = employee
+        super().__init__()
+
+    def set_menu_title(self):
         self.menu_title = (
             f"👨‍🏫 Bem-vindo(a), {self.employee.name} ({self.employee.position})!"
         )
+
+    def set_logged_user(self):
+        self.logged_user = self.employee
 
     def show_menu_options(self):
         if self.employee.position in {"professor", "diretor"}:
