@@ -21,10 +21,8 @@ class LoginCommand(ABC):
     def login(self):
         nome = input("\nNome: ")
         senha = input("Senha: ")
-        self.user = self.school.login(nome, senha)
 
-        if self.user is None:
-            raise ValueError("Credenciais inválidas.")
+        self.user = self.school.login(nome, senha)
 
         print(f"\n✅ Login realizado como {self.user.get_type()}.")
 

@@ -1,5 +1,6 @@
 import datetime
 
+from exceptions import InvalidGradeException
 from repository import (
     AttendanceRepository,
     ECARepository,
@@ -55,12 +56,8 @@ class School:
         idx = self.user_repo.add_user(user)
         print(f"{user.get_type()} cadastrado (ID {idx})")
 
-    def login(self, nome: str, senha: str) -> User | None:
-        try:
-            return self.user_repo.validate_user(nome, senha)
-        except ValueError:
-            print("Credenciais Inválidas!\n")
-            return None
+    def login(self, nome: str, senha: str) -> User:
+        return self.user_repo.validate_user(nome, senha)
 
     def registrar_presenca(self, student: Student, sclass: SchoolClass):
         at = self.attendance_repo.register_attendance(student, sclass)
@@ -281,10 +278,16 @@ class School:
                     resp = input(f"Nota de {student.name}? ").strip().lower()
                     try:
                         grade = float(resp)
+                        if grade < 0 or grade > 10:
+                            raise InvalidGradeException(
+                                "A nota deve estar entre 0.0 e 10.0"
+                            )
                         self.lancar_nota(exam, student, grade)
                         break
-                    except Exception:
-                        print("    Inválido.")
+                    except ValueError:
+                        print("    Entrada inválida.")
+                    except InvalidGradeException as e:
+                        print(f"    {e}")
 
     def add_students_to_sclass(self, sclass: SchoolClass, students: list[Student]):
         for student in students:

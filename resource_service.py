@@ -96,6 +96,13 @@ class ResourceToFileAdapter:
 
     def upload_from_path(self, str_path: str) -> str:
         path = Path(str_path).resolve()
+
+        if not path.exists():
+            raise FileNotFoundError("O arquivo não existe.")
+
+        if path.is_dir():
+            raise ValueError("O path representa um diretório.")
+
         data = path.read_bytes()
         return self._service.upload(path.name, data)
 

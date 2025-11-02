@@ -1,6 +1,6 @@
 from menu import UserMenuStrategy
 from system import Employee, Exam, Resource
-from utils import read_date, select_item
+from utils import read_date, read_non_empty_string, select_item
 from input_helpers import (
     add_student_to_class,
     add_student_to_eca,
@@ -68,7 +68,7 @@ class EmployeeMenuStrategy(UserMenuStrategy):
                             elif resp == "n":
                                 break
                             else:
-                                print("    Inválido.")
+                                print("    Entrada inválida.")
 
                 return False
 
@@ -92,9 +92,18 @@ class EmployeeMenuStrategy(UserMenuStrategy):
                 )
 
                 if sclass is not None:
-                    name = input("Nome do material: ").strip()
-                    str_path = input("Path do material: ").strip()
-                    url = self.school.resource_adapter.upload_from_path(str_path)
+                    name = read_non_empty_string("Nome do material")
+
+                    while True:
+                        try:
+                            str_path = read_non_empty_string("Path do material")
+                            url = self.school.resource_adapter.upload_from_path(
+                                str_path
+                            )
+                            break
+                        except (FileNotFoundError, ValueError):
+                            print("Arquivo inválido. Tente novamente.")
+                            continue
 
                     resource = Resource(name, url)
 
@@ -111,7 +120,7 @@ class EmployeeMenuStrategy(UserMenuStrategy):
 
                 if sclass is not None:
                     print("Insira informações da prova: ")
-                    name = input("Nome: ").strip()
+                    name = read_non_empty_string("Nome")
                     date = read_date()
                     self.school.agendar_prova(sclass, Exam(sclass, name, date))
 
@@ -154,6 +163,8 @@ class EmployeeMenuStrategy(UserMenuStrategy):
                 if sclass is not None:
                     students = add_student_to_class(sclass)
                     self.school.add_students_to_sclass(sclass, students)
+                else:
+                    return True
 
                 return False
 
@@ -185,6 +196,8 @@ class EmployeeMenuStrategy(UserMenuStrategy):
                     students = add_student_to_eca(eca)
                     for student in students:
                         eca.students.append(student)
+                else:
+                    return True
 
                 return False
 

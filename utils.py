@@ -3,6 +3,8 @@ import random
 import string
 from typing import Callable, TypeVar
 
+from exceptions import InvalidExamDate, InvalidMenuOptionException
+
 
 def generate_random_hash(length: int = 6):
     characters = string.ascii_letters + string.digits
@@ -43,9 +45,9 @@ def select_item(
             elif 1 <= escolha <= len(items):
                 return items[escolha - 1]
             else:
-                print("Opção inválida, tente novamente.")
-        except ValueError:
-            print("Entrada inválida, digite um número.")
+                raise InvalidMenuOptionException()
+        except (ValueError, InvalidMenuOptionException):
+            print("Entrada inválida. Digite um número dentro das opções.")
 
 
 def read_date() -> datetime.date:
@@ -57,9 +59,15 @@ def read_date() -> datetime.date:
             scheduled_datetime = datetime.datetime.strptime(
                 combined_str, "%Y-%m-%d"
             ).date()
+
+            if scheduled_datetime < datetime.date.today():
+                raise InvalidExamDate("Data da prova deve ser no futuro.")
+
             return scheduled_datetime
         except ValueError:
             print("Formato de data inválido. Tente novamente.\n")
+        except InvalidExamDate as e:
+            print(f"{e}\n")
 
 
 def read_time() -> datetime.time:
@@ -68,5 +76,31 @@ def read_time() -> datetime.time:
         try:
             hour, minute = map(int, time_str.split(":"))
             return datetime.time(hour, minute)
-        except Exception:
+        except ValueError:
             print("Formato inválido. Use HH:MM, por exemplo 14:30.\n")
+
+
+def read_non_empty_string(prop_name: str) -> str:
+    while True:
+        name = input(f"{prop_name}: ").strip()
+
+        if len(name) == 0:
+            print(f"{prop_name} não pode ser vazio.\n")
+            continue
+
+        return name
+
+
+def select_multiple_options(collection: list[T]) -> list[T]:
+    while True:
+        entrada = input("Digite os números separados por vírgula (ex: 1,3,5): ").strip()
+        try:
+            indices = [int(x) for x in entrada.split(",") if x.strip()]
+            if not indices:
+                raise ValueError
+            if all(1 <= idx <= len(collection) for idx in indices):
+                return [collection[idx - 1] for idx in indices]
+            else:
+                print("Algum número está fora da lista. Tente novamente.")
+        except ValueError:
+            print("Entrada inválida. Use números separados por vírgula.")

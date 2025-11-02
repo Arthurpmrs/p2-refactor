@@ -1,6 +1,7 @@
 import datetime
 import os
 from builder import SchoolClassBuilder
+from exceptions import InvalidMenuOptionException, UserCreationError
 from factory import (
     EmployeeRegistrator,
     GuardianRegistrator,
@@ -8,24 +9,25 @@ from factory import (
     StudentRegistrator,
 )
 from service import School
-from system import ECA, Employee, Guardian, SchoolClass, Student
-from utils import read_time
+from system import ECA, Employee, SchoolClass, Student
+from utils import select_multiple_options, read_non_empty_string, read_time
 
 
 def input_school_class(teacher: Employee) -> SchoolClass:
     print("--- Cadastro de Turma ---")
 
-    name = input("Nome da turma: ").strip()
+    name = read_non_empty_string("Nome da turma")
     schedule = read_time()
 
     while True:
         try:
             n_classes_total = int(input("Número total de aulas previstas: ").strip())
-            if n_classes_total < 0:
-                raise ValueError
+            if n_classes_total <= 0:
+                raise InvalidMenuOptionException()
             break
-        except ValueError:
-            print("Digite um número inteiro válido e não negativo.")
+        except (ValueError, InvalidMenuOptionException):
+            print("Opção inválida. O valor precisa ser um número maior que zero.")
+            continue
 
     builder = SchoolClassBuilder()
     sclass = (
@@ -43,7 +45,7 @@ def input_school_class(teacher: Employee) -> SchoolClass:
 def input_eca(teacher: Employee) -> ECA:
     print("--- Cadastro de Atividade Extracurricular ---")
 
-    name = input("Nome da atividade: ").strip()
+    name = read_non_empty_string("Nome da atividade")
     schedule = read_time()
 
     eca = ECA(name=name, schedule=schedule, teacher=teacher)
@@ -70,20 +72,7 @@ def add_student_to_class(sclass: SchoolClass) -> list[Student]:
     for i, student in enumerate(students_not_in_class, start=1):
         print(f"{i}. {student.name} (ID: {student.id})")
 
-    print("Digite os números dos alunos separados por vírgula (ex: 1,3,5):")
-    while True:
-        entrada = input("Seleção: ").strip()
-        try:
-            indices = [int(x) for x in entrada.split(",") if x.strip()]
-            if not indices:
-                raise ValueError
-            if all(1 <= idx <= len(students_not_in_class) for idx in indices):
-                selected_students = [students_not_in_class[idx - 1] for idx in indices]
-                break
-            else:
-                print("Algum número está fora da lista. Tente novamente.")
-        except ValueError:
-            print("Entrada inválida. Use números separados por vírgula.")
+    selected_students = select_multiple_options(students_not_in_class)
 
     print(f"\n{len(selected_students)} aluno(s) adicionado(s) à turma '{sclass.name}'.")
     return selected_students
@@ -107,20 +96,7 @@ def add_student_to_eca(eca: ECA) -> list[Student]:
     for i, student in enumerate(students_not_in_eca, start=1):
         print(f"{i}. {student.name} (ID: {student.id})")
 
-    print("Digite os números dos alunos separados por vírgula (ex: 1,3,5):")
-    while True:
-        entrada = input("Seleção: ").strip()
-        try:
-            indices = [int(x) for x in entrada.split(",") if x.strip()]
-            if not indices:
-                raise ValueError
-            if all(1 <= idx <= len(students_not_in_eca) for idx in indices):
-                selected_students = [students_not_in_eca[idx - 1] for idx in indices]
-                break
-            else:
-                print("Algum número está fora da lista. Tente novamente.")
-        except ValueError:
-            print("Entrada inválida. Use números separados por vírgula.")
+    selected_students = select_multiple_options(students_not_in_eca)
 
     print(
         f"\n{len(selected_students)} aluno(s) adicionado(s) à atividade '{eca.name}'."
@@ -161,26 +137,6 @@ def visualizar_turma(sclass: SchoolClass):
         print("Nenhuma prova cadastrada.")
 
 
-def register_student_and_guardian():
-    school = School()
-
-    print("--- Cadastro de Aluno ---")
-    nome_aluno = input("Nome do aluno: ").strip()
-    senha_aluno = input("Senha do aluno: ").strip()
-
-    aluno = Student(name=nome_aluno, password=senha_aluno)
-    school.user_repo.add_user(aluno)
-
-    print("\n--- Cadastro de Responsável ---")
-    nome_resp = input("Nome do responsável: ").strip()
-    senha_resp = input("Senha do responsável: ").strip()
-
-    resp = Guardian(name=nome_resp, password=senha_resp, student=aluno)
-    school.user_repo.add_user(resp)
-
-    print(f"\n✅ Matrícula de {aluno.name} realizada com sucesso!")
-
-
 def register_users():
     school = School()
     registrator: Registrator | None = None
@@ -201,10 +157,13 @@ def register_users():
             case "3":
                 registrator = GuardianRegistrator()
             case _:
-                print("❌ Opção inválida.")
-                input("Clique Enter para voltar ao menu.")
+                input("❌ Opção inválida. Clique Enter para voltar ao menu.")
                 continue
         break
 
-    user = registrator.create_user()
-    school.register_user(user)
+    try:
+        user = registrator.create_user()
+    except UserCreationError as e:
+        print(str(e))
+    else:
+        school.register_user(user)

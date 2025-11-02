@@ -1,6 +1,7 @@
 from itertools import count
 from typing import Iterator
 
+from exceptions import InvalidCredentialsException
 from system import (
     ECA,
     Attendance,
@@ -35,10 +36,10 @@ class UserRepository:
                 break
 
         if not selected_user:
-            raise ValueError("Credenciais inválidas.")
+            raise InvalidCredentialsException("Usuário não encontrado.")
 
         if selected_user.password != password:
-            raise ValueError("Credenciais inválidas.")
+            raise InvalidCredentialsException("Senha errada.")
 
         return selected_user
 

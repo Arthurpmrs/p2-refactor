@@ -5,6 +5,7 @@ from commands import (
     LoginAsGuardianCommand,
     LoginAsStudentCommand,
 )
+from exceptions import InvalidCredentialsException
 from service import School
 from menu import UserMenuContext
 
@@ -53,11 +54,15 @@ class App:
                 case "0":
                     break
                 case _:
-                    print("❌ Opção inválida.")
-                    input("Clique Enter para voltar ao menu.")
+                    input("❌ Opção inválida. Clique Enter para tentar novamente.")
                     continue
 
-            command.execute()
+            try:
+                command.execute()
+            except InvalidCredentialsException:
+                input("❌ Credenciais inválidas. Clique Enter para tentar novamente.")
+                continue
+
             self.context.show_menu()
 
             break
