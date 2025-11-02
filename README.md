@@ -55,3 +55,6 @@ O sistema simula um ambiente escolar com suporte para três tipos de usuários:
 - **Decorator**: Implementado para adicionar registro de navegação dos usuários nos menus da aplicação. Assim, são registrar padrões de uso que podem ser estudadados para entender melhor os clientes. Os dados são salvos num arquivo `app.log`.
 - **Proxy**: Foi utilizado como uma camada de Cache para um serviço externo de upload/download de recursos das aulas (_mock_), seguindo a mesma interface desse serviço. Essa classe verifica no cache interno a disponibilidade de arquivos para download, antes de fazer uma chamada para o serviço externo.
 - **Adapter**: Implementado para conectar o serviço de upload com a aplicação. O serviço de upload/download retorna bytes. Entretanto, a aplicação lida com o input de paths de arquivos para o upload e salvamento de arquivos numa pasta específica para download.
+
+### Gestão de exceções
+A gestão de exceções foi aprimorada para garantir que o sistema se comporte como esperado, mesmo quando o usuário entra dados incorretos. As funções foram ajustadas para avisar ao usuário quando ele insere um dado inválido e permitir que ele tenta novamente.
