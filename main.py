@@ -50,6 +50,8 @@ class App:
                     command = LoginAsEmpoloyeeCommand(self.context)
                 case "3":
                     command = LoginAsGuardianCommand(self.context)
+                case "0":
+                    break
                 case _:
                     print("❌ Opção inválida.")
                     input("Clique Enter para voltar ao menu.")
