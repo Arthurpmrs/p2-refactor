@@ -61,7 +61,7 @@ def read_date() -> datetime.date:
             ).date()
 
             if scheduled_datetime < datetime.date.today():
-                raise InvalidExamDate("Data da prova deve ser no futuro.")
+                raise InvalidExamDate("Data deve ser no futuro.")
 
             return scheduled_datetime
         except ValueError:
