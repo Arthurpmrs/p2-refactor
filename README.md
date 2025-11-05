@@ -588,7 +588,7 @@ class School:
    # ...
 ```
 
-### Gestão de exceções
+## Gestão de exceções
 A gestão de exceções foi aprimorada para garantir que o sistema se comporte como esperado, mesmo quando o usuário entra dados incorretos. As funções foram ajustadas para avisar ao usuário quando ele insere um dado inválido e permitir que ele tenta novamente. Abaixo são apresentados diferentes casos de tratamento de exceção no sistema.
 
 **Entrada de campos de texto que não podem ser nulos**: Foi criada uma função auxiliar, pois esse caso aparecia muito. Quando o usuário entra uma string em branco, o código mostra um erro e pergunta novamente ao usuário.
